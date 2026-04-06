@@ -3,232 +3,249 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SE Skill & Resource Intelligence</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<title>BU-Wise Skill Mapping Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#f4f3ef;--bg2:#eceae5;--surface:#fff;--border:#dedad3;--border2:#c8c4bc;
-  --ink:#1c1b18;--ink2:#58564f;--ink3:#9a9890;
-  --green:#166534;--green-bg:#dcfce7;--green-mid:#86efac;
-  --blue:#1e3a8a;--blue-bg:#dbeafe;--blue-mid:#93c5fd;
-  --amber:#92400e;--amber-bg:#fef3c7;--amber-mid:#fcd34d;
-  --red:#991b1b;--red-bg:#fee2e2;--red-mid:#fca5a5;
-  --purple:#4c1d95;--purple-bg:#ede9fe;--purple-mid:#c4b5fd;
-  --teal:#134e4a;--teal-bg:#ccfbf1;--teal-mid:#5eead4;
-  --radius:12px;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+:root{
+  --bg:#f0efe9;--bg2:#e6e4dd;--surface:#fff;--border:#dddbd4;--border2:#c9c7be;
+  --ink:#181814;--ink2:#52504a;--ink3:#97958e;
+  --se:#1d4ed8;--se-bg:#eff6ff;--se-mid:#93c5fd;
+  --sdsi:#0f766e;--sdsi-bg:#f0fdfa;--sdsi-mid:#5eead4;
+  --svt:#7c3aed;--svt-bg:#f5f3ff;--svt-mid:#c4b5fd;
+  --nrm:#b45309;--nrm-bg:#fffbeb;--nrm-mid:#fcd34d;
+  --rd:#be185d;--rd-bg:#fdf2f8;--rd-mid:#f9a8d4;
+  --testing:#065f46;--testing-bg:#ecfdf5;--testing-mid:#6ee7b7;
+  --it:#374151;--it-bg:#f9fafb;--it-mid:#9ca3af;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.04);
+  --r:12px;--rs:8px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--ink);font-family:'Outfit',sans-serif;font-size:14px;min-height:100vh}
-.app{display:grid;grid-template-columns:288px 1fr;min-height:100vh}
+body{background:var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;min-height:100vh}
 
-/* SIDEBAR */
+/* ── LAYOUT ── */
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+
+/* ── SIDEBAR ── */
 .sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;overflow:hidden}
-.sb-head{padding:1.4rem 1.2rem 1rem;border-bottom:1px solid var(--border);flex-shrink:0}
-.brand{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px}
-.sb-title{font-size:1.05rem;font-weight:700;color:var(--ink);line-height:1.3}
-.sb-sub{font-size:11px;color:var(--ink3);margin-top:2px}
+.sb-brand{padding:1.4rem 1.2rem 1rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.sb-eyebrow{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px}
+.sb-title{font-size:1rem;font-weight:800;color:var(--ink);line-height:1.25}
+.sb-sub{font-size:11px;color:var(--ink3);margin-top:3px}
 
-.mode-toggle{margin:.9rem 1.2rem .75rem;display:grid;grid-template-columns:1fr 1fr;background:var(--bg2);border-radius:9px;padding:3px;gap:2px;flex-shrink:0}
-.mode-btn{padding:7px 6px;border:none;border-radius:7px;background:transparent;font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .18s;line-height:1.4;text-align:center}
-.mode-btn.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.1)}
-.mode-btn span{display:block;font-size:9px;font-weight:400;color:var(--ink3);margin-top:1px;font-family:'IBM Plex Mono',monospace;letter-spacing:.04em}
-
-.sw{padding:0 1.2rem .75rem;flex-shrink:0}
-.sbox{width:100%;padding:8px 10px 8px 30px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;font-size:12.5px;color:var(--ink);outline:none;transition:border-color .2s,background .2s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' fill='none' stroke='%239a9890' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:9px center}
-.sbox:focus{border-color:var(--blue);background:var(--surface)}
+.sb-search{padding:.75rem 1rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.sbox{width:100%;padding:7px 10px 7px 28px;background:var(--bg2);border:1px solid var(--border);border-radius:7px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:var(--ink);outline:none;transition:border-color .2s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%2397958e' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:9px center}
+.sbox:focus{border-color:var(--se);background:var(--surface)}
 .sbox::placeholder{color:var(--ink3)}
+.fchip{font-size:9.5px;padding:2px 8px;border-radius:4px;font-weight:700;cursor:pointer;border:1px solid transparent;font-family:'JetBrains Mono',monospace;transition:all .14s;letter-spacing:.03em;user-select:none}
+.fchip:hover{opacity:.8}
+.fchip.active{box-shadow:0 0 0 1.5px currentColor}
+.mtag{font-size:8.5px;font-family:'JetBrains Mono',monospace;padding:1px 5px;border-radius:3px;margin-left:3px;font-weight:600;opacity:.8;flex-shrink:0}
+.mtag-sk{background:var(--se-bg);color:var(--se)}
+.mtag-ld{background:var(--rd-bg);color:var(--rd)}
+.mtag-bu{background:var(--sdsi-bg);color:var(--sdsi)}
+.sb-sec{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);padding:8px 10px 3px;font-family:'JetBrains Mono',monospace;border-top:1px solid var(--border);margin-top:3px}
+.no-res{padding:1.25rem 10px;font-size:12px;color:var(--ink3);text-align:center;line-height:1.6}
 
-.sb-list{flex:1;overflow-y:auto;padding:0 .75rem 1rem}
+.sb-list{flex:1;overflow-y:auto;padding:.5rem}
 .sb-list::-webkit-scrollbar{width:3px}
 .sb-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
-.fn-item{padding:9px 11px;border-radius:8px;cursor:pointer;transition:all .15s;margin-bottom:2px;border:1px solid transparent}
+.bu-group{margin-bottom:.25rem}
+.bu-header{display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:6px;cursor:pointer;transition:background .15s;margin-bottom:1px}
+.bu-header:hover{background:var(--bg2)}
+.bu-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.bu-name{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.bu-ct{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--ink3);margin-left:auto}
+
+.fn-item{padding:7px 10px 7px 22px;border-radius:7px;cursor:pointer;transition:all .14s;margin-bottom:1px;border:1px solid transparent;display:flex;align-items:center;justify-content:space-between;gap:6px}
 .fn-item:hover{background:var(--bg2)}
-.fn-item.active{background:var(--blue-bg);border-color:var(--blue-mid)}
-.fn-name{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px}
-.fn-item.active .fn-name{color:var(--blue)}
-.tag-row{display:flex;gap:4px;flex-wrap:wrap}
-.tag{font-size:9.5px;padding:1.5px 6px;border-radius:4px;font-weight:600;letter-spacing:.03em}
-.tag-cloud{background:var(--blue-bg);color:var(--blue)}
-.tag-java{background:var(--green-bg);color:var(--green)}
-.tag-nosql{background:var(--amber-bg);color:var(--amber)}
-.tag-devops{background:var(--red-bg);color:var(--red)}
-.tag-cpp{background:var(--purple-bg);color:var(--purple)}
+.fn-item.active{background:var(--se-bg);border-color:var(--se-mid)}
+.fn-label{font-size:12.5px;font-weight:600;color:var(--ink);flex:1;line-height:1.3}
+.fn-item.active .fn-label{color:var(--se)}
+.fn-leader{font-size:9.5px;color:var(--ink3);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px}
 
-.sk-item{padding:8px 11px;border-radius:8px;cursor:pointer;transition:all .15s;margin-bottom:2px;border:1px solid transparent;display:flex;align-items:center;justify-content:space-between}
-.sk-item:hover{background:var(--bg2)}
-.sk-item.active{background:var(--green-bg);border-color:var(--green-mid)}
-.sk-name{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:500;color:var(--ink)}
-.sk-item.active .sk-name{color:var(--green)}
-.sk-ct{font-size:10px;font-family:'IBM Plex Mono',monospace;background:var(--bg2);padding:1px 6px;border-radius:4px;color:var(--ink3)}
-.sk-item.active .sk-ct{background:#bbf7d0;color:var(--green)}
-.list-sec{font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);padding:10px 11px 5px;font-family:'IBM Plex Mono',monospace}
+/* ── MAIN ── */
+.main{display:flex;flex-direction:column;min-height:100vh}
 
-/* MAIN */
-.main{display:flex;flex-direction:column;overflow-y:auto}
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:10;gap:1rem;flex-wrap:wrap}
-.tb-left{display:flex;flex-direction:column;gap:2px}
-.tb-mode{font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);font-family:'IBM Plex Mono',monospace}
-.tb-title{font-size:1.25rem;font-weight:700;color:var(--ink)}
-.tb-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+/* Topbar */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;gap:1rem;flex-wrap:wrap}
+.tb-left{display:flex;flex-direction:column;gap:1px}
+.tb-eyebrow{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-family:'JetBrains Mono',monospace}
+.tb-title{font-size:1.2rem;font-weight:800;color:var(--ink);line-height:1.2}
+.tb-right{display:flex;gap:8px;align-items:center}
 
-.up-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;color:var(--ink2);cursor:pointer;transition:all .15s}
-.up-btn:hover{background:var(--bg2)}
-.up-btn.ok{border-color:var(--green-mid);color:var(--green);background:var(--green-bg)}
-#fileInput{display:none}
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:1.25rem 2rem .75rem}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:.85rem 1rem;box-shadow:var(--shadow);cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 4px 18px rgba(0,0,0,.1);border-color:var(--border2)}
+.stat-card:active{transform:translateY(0)}
+.stat-card::after{content:'View →';position:absolute;bottom:8px;right:10px;font-size:9.5px;font-weight:600;color:var(--ink3);opacity:0;transition:opacity .18s;font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+.stat-card:hover::after{opacity:1}
+.stat-val{font-size:1.6rem;font-weight:800;color:var(--ink);line-height:1;margin-bottom:3px}
+.stat-lbl{font-size:10px;color:var(--ink3);font-weight:500;letter-spacing:.03em}
 
-.dbadge{font-size:10.5px;padding:4px 10px;border-radius:6px;font-weight:600;font-family:'IBM Plex Mono',monospace}
-.dbadge.loaded{background:var(--green-bg);color:var(--green)}
-.dbadge.demo{background:var(--amber-bg);color:var(--amber)}
-
-.content{padding:2rem;flex:1}
+/* Content */
+.content{padding:.75rem 2rem 2rem;flex:1}
 
 /* Welcome */
-.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;text-align:center;gap:10px}
-.w-icon{width:56px;height:56px;background:var(--bg2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:6px}
-.welcome h2{font-size:1.2rem;font-weight:700;color:var(--ink)}
-.welcome p{font-size:13px;color:var(--ink3);max-width:340px;line-height:1.65}
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:380px;text-align:center;gap:8px}
+.w-icon{width:52px;height:52px;background:var(--bg2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:8px}
+.welcome h2{font-size:1.15rem;font-weight:800;color:var(--ink)}
+.welcome p{font-size:13px;color:var(--ink3);max-width:340px;line-height:1.7}
 
-/* Function detail */
-.fn-dh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
-.fn-dn{font-size:1.6rem;font-weight:800;color:var(--ink);line-height:1.2}
-.fn-dm{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}
-.fn-stat{font-size:11px;padding:3px 10px;border-radius:6px;font-weight:600;background:var(--bg2);color:var(--ink2)}
+/* BU badge on detail */
+.bu-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;letter-spacing:.05em;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
 
-.skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.5rem}
-.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;box-shadow:var(--shadow)}
-.sc-head{display:flex;align-items:center;gap:7px;margin-bottom:1rem}
-.sc-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-.sc-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-family:'IBM Plex Mono',monospace}
-.sc-note{font-size:10px;color:var(--ink3);font-style:italic;margin-left:auto}
-.pills{display:flex;flex-wrap:wrap;gap:6px}
-.pill{padding:5px 11px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;border:1px solid transparent;display:inline-flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace}
-.pill:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.13)}
-.pill.lang{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-mid)}
-.pill.db{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-mid)}
-.pill.cloud{background:var(--teal-bg);color:var(--teal);border-color:var(--teal-mid)}
-.pill.other{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-mid)}
-.pill .arr{font-size:9px;opacity:.55}
-.pill.on{box-shadow:0 0 0 2px var(--blue)}
+/* Role detail header */
+.role-header{margin-bottom:1.25rem}
+.role-name{font-size:1.5rem;font-weight:800;color:var(--ink);line-height:1.2;margin-bottom:8px}
+.role-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.meta-pill{font-size:11px;padding:3px 10px;border-radius:5px;font-weight:600;background:var(--bg2);color:var(--ink2)}
+
+/* Leader card */
+.leader-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:.85rem 1rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)}
+.leader-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.leader-info{}
+.leader-label{font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:2px;font-family:'JetBrains Mono',monospace}
+.leader-name{font-size:13px;font-weight:700;color:var(--ink);line-height:1.3}
+
+/* Skill cards grid */
+.skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;box-shadow:var(--shadow)}
+.sc-head{display:flex;align-items:center;gap:7px;margin-bottom:.85rem}
+.sc-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.sc-label{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-family:'JetBrains Mono',monospace}
+.sc-ct{font-size:10px;color:var(--ink3);margin-left:auto}
+
+.pills{display:flex;flex-wrap:wrap;gap:5px}
+.pill{padding:4px 10px;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;transition:all .14s;border:1px solid transparent;font-family:'JetBrains Mono',monospace;display:inline-flex;align-items:center;gap:4px}
+.pill:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.pill.lang{background:var(--se-bg);color:var(--se);border-color:var(--se-mid)}
+.pill.db{background:var(--nrm-bg);color:var(--nrm);border-color:var(--nrm-mid)}
+.pill.cloud{background:var(--sdsi-bg);color:var(--sdsi);border-color:var(--sdsi-mid)}
+.pill.other{background:var(--svt-bg);color:var(--svt);border-color:var(--svt-mid)}
+.pill .arr{font-size:8px;opacity:.5}
+.pill.on{box-shadow:0 0 0 2px var(--se)}
 
 /* Resource panel */
-.rp{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
-.rp-head{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);flex-wrap:wrap;gap:8px}
-.rp-l{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rp{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-top:4px}
+.rp-head{padding:.85rem 1.1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);flex-wrap:wrap;gap:8px}
+.rp-l{display:flex;align-items:center;gap:8px}
 .rp-lbl{font-size:12px;font-weight:700;color:var(--ink2)}
-.chip{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 9px;background:var(--blue-bg);color:var(--blue);border-radius:5px;font-weight:500;border:1px solid var(--blue-mid)}
-.rp-ct{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--ink3)}
+.chip{font-family:'JetBrains Mono',monospace;font-size:10.5px;padding:2px 8px;background:var(--se-bg);color:var(--se);border-radius:4px;font-weight:500;border:1px solid var(--se-mid)}
+.rp-ct{font-size:10.5px;font-family:'JetBrains Mono',monospace;color:var(--ink3)}
 
 table.rt{width:100%;border-collapse:collapse}
-table.rt th{padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);border-bottom:1px solid var(--border);background:var(--surface);font-family:'IBM Plex Mono',monospace;white-space:nowrap}
-table.rt td{padding:11px 14px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+table.rt th{padding:8px 12px;text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);border-bottom:1px solid var(--border);background:var(--surface);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+table.rt td{padding:10px 12px;font-size:12.5px;border-bottom:1px solid var(--border);vertical-align:middle}
 table.rt tr:last-child td{border-bottom:none}
 table.rt tr:hover td{background:var(--bg)}
-.pn{font-weight:600;color:var(--ink)}
-.pid{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink3);margin-top:1px}
-.tbadge{font-size:11px;padding:3px 9px;border-radius:5px;font-weight:600;background:var(--bg2);color:var(--ink2);white-space:nowrap}
+.pn{font-weight:700;color:var(--ink)}
+.pid{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink3);margin-top:1px}
+.tbadge{font-size:10.5px;padding:2px 8px;border-radius:4px;font-weight:600;background:var(--bg2);color:var(--ink2);white-space:nowrap}
 .ldots{display:flex;gap:3px;align-items:center}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--border2)}
-.dot.f{background:var(--blue)}
-.dot.f.x{background:var(--green)}
-.llbl{font-size:11px;color:var(--ink3);margin-left:5px}
-.ab{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;padding:4px 10px;border-radius:6px;font-weight:600;white-space:nowrap}
-.ab::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.ab.available{background:var(--green-bg);color:var(--green)}
-.ab.available::before{background:#22c55e}
-.ab.occupied{background:var(--red-bg);color:var(--red)}
-.ab.occupied::before{background:#ef4444}
-.ab.partial{background:var(--amber-bg);color:var(--amber)}
-.ab.partial::before{background:#f59e0b}
-.nores{padding:2.5rem;text-align:center;color:var(--ink3);font-size:13px}
-.nores strong{display:block;color:var(--ink2);font-size:14px;margin-bottom:5px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--border2)}
+.dot.f{background:var(--se)}
+.dot.f.x{background:var(--sdsi)}
+.llbl{font-size:10.5px;color:var(--ink3);margin-left:5px}
+.ab{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 9px;border-radius:5px;font-weight:600;white-space:nowrap}
+.ab::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.ab.available{background:var(--testing-bg);color:var(--testing)}.ab.available::before{background:#22c55e}
+.ab.occupied{background:#fee2e2;color:#991b1b}.ab.occupied::before{background:#ef4444}
+.ab.partial{background:var(--nrm-bg);color:var(--nrm)}.ab.partial::before{background:#f59e0b}
+.nores{padding:2rem;text-align:center;color:var(--ink3);font-size:12.5px}
+.nores strong{display:block;color:var(--ink2);font-size:13px;margin-bottom:5px}
 
-/* Skill lookup */
-.sl-name{font-size:1.6rem;font-weight:800;color:var(--ink);font-family:'IBM Plex Mono',monospace;margin-bottom:10px}
-.lu-stats{display:flex;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap}
-.lu-stat{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:10px 16px;box-shadow:var(--shadow);min-width:90px}
-.lu-val{font-size:1.5rem;font-weight:800;color:var(--ink);line-height:1}
-.lu-lbl{font-size:10px;color:var(--ink3);margin-top:2px}
-.rn-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;font-family:'IBM Plex Mono',monospace}
-.rn-pills{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:1.25rem}
-.rn-pill{padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-mid);cursor:pointer;transition:all .15s}
-.rn-pill:hover{background:#bfdbfe;transform:translateY(-1px)}
+/* BU overview cards */
+.bu-overview{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.bu-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;box-shadow:var(--shadow);cursor:pointer;transition:all .18s;border-top:3px solid transparent}
+.bu-card:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.09)}
+.bu-card-name{font-size:1rem;font-weight:800;color:var(--ink);margin-bottom:4px}
+.bu-card-ct{font-size:11px;color:var(--ink3);margin-bottom:10px}
+.bu-card-fns{display:flex;flex-wrap:wrap;gap:4px}
+.fn-pill{font-size:10px;padding:2px 7px;background:var(--bg2);border-radius:4px;color:var(--ink2);font-weight:500}
+
+/* Upload */
+.up-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:7px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;color:var(--ink2);cursor:pointer;transition:all .15s}
+.up-btn:hover{background:var(--bg2)}
+.up-btn.ok{border-color:var(--sdsi-mid);color:var(--sdsi);background:var(--sdsi-bg)}
+#fileInput{display:none}
+.dbadge{font-size:10px;padding:3px 9px;border-radius:5px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.dbadge.demo{background:var(--nrm-bg);color:var(--nrm)}
+.dbadge.loaded{background:var(--testing-bg);color:var(--testing)}
 
 /* Modal */
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:100;align-items:center;justify-content:center}
 .ov.open{display:flex}
-.modal{background:var(--surface);border-radius:var(--radius);padding:2rem;width:530px;max-width:94vw;box-shadow:0 8px 40px rgba(0,0,0,.18)}
-.m-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
-.m-title{font-size:1.1rem;font-weight:700;color:var(--ink)}
-.m-close{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--ink3);line-height:1;padding:2px}
-.m-close:hover{color:var(--ink)}
-.m-sub{font-size:12.5px;color:var(--ink3);margin-bottom:1.25rem;line-height:1.6}
-.dz{border:2px dashed var(--border2);border-radius:10px;padding:2.5rem 2rem;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:1.25rem}
-.dz:hover,.dz.drag{border-color:var(--blue);background:var(--blue-bg)}
-.dz-icon{font-size:2rem;margin-bottom:8px}
+.modal{background:var(--surface);border-radius:var(--r);padding:1.75rem;width:500px;max-width:94vw;box-shadow:0 8px 40px rgba(0,0,0,.18)}
+.m-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:5px}
+.m-title{font-size:1rem;font-weight:800;color:var(--ink)}
+.m-close{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--ink3)}
+.m-sub{font-size:12px;color:var(--ink3);margin-bottom:1.1rem;line-height:1.6}
+.dz{border:2px dashed var(--border2);border-radius:9px;padding:2rem;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:1rem}
+.dz:hover,.dz.drag{border-color:var(--se);background:var(--se-bg)}
+.dz-icon{font-size:1.8rem;margin-bottom:6px}
 .dz-txt{font-size:13px;color:var(--ink2);font-weight:600}
-.dz-hint{font-size:11px;color:var(--ink3);margin-top:4px}
-.ct{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);margin-bottom:7px;font-family:'IBM Plex Mono',monospace}
-.cpills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
-.cp{font-family:'IBM Plex Mono',monospace;font-size:10.5px;padding:3px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:5px;color:var(--ink2)}
-.cp.req{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-mid)}
-.m-note{font-size:11px;color:var(--ink3);line-height:1.6;margin-bottom:1.25rem}
-.m-act{display:flex;gap:8px;justify-content:flex-end}
-.btn{padding:8px 18px;border-radius:8px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border2);transition:all .15s}
+.dz-hint{font-size:11px;color:var(--ink3);margin-top:3px}
+.ct{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);margin-bottom:6px;font-family:'JetBrains Mono',monospace}
+.cpills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px}
+.cp{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 7px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--ink2)}
+.cp.req{background:var(--se-bg);color:var(--se);border-color:var(--se-mid)}
+.m-note{font-size:11px;color:var(--ink3);line-height:1.6;margin-bottom:1rem}
+.m-act{display:flex;gap:7px;justify-content:flex-end}
+.btn{padding:7px 16px;border-radius:7px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid var(--border2);transition:all .15s}
 .btn-sec{background:var(--surface);color:var(--ink2)}.btn-sec:hover{background:var(--bg2)}
-.btn-demo{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-mid)}.btn-demo:hover{background:#fde68a}
+.btn-demo{background:var(--nrm-bg);color:var(--nrm);border-color:var(--nrm-mid)}.btn-demo:hover{background:#fde68a}
 
 @keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.fi{animation:fi .22s ease both}
-@media(max-width:820px){.app{grid-template-columns:1fr}.sidebar{height:auto;position:static;border-right:none;border-bottom:1px solid var(--border);max-height:300px}.skill-grid{grid-template-columns:1fr}}
+.fi{animation:fi .2s ease both}
+
+@media(max-width:820px){.app{grid-template-columns:1fr}.sidebar{height:auto;position:static;border-right:none;border-bottom:1px solid var(--border);max-height:280px}.skill-grid{grid-template-columns:1fr}.stats-row{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 <div class="app">
 
+<!-- SIDEBAR -->
 <aside class="sidebar">
-  <div class="sb-head">
-    <div class="brand">Skill Mapping · SE</div>
-    <div class="sb-title">Skill & Resource<br>Intelligence</div>
-    <div class="sb-sub">Based on your skill mapping file</div>
+  <div class="sb-brand">
+    <div class="sb-eyebrow">BU-Wise · Skill Intelligence</div>
+    <div class="sb-title">Skill Mapping<br>Dashboard</div>
+    <div class="sb-sub">7 BUs · 40+ Functions</div>
   </div>
-  <div class="mode-toggle">
-    <button class="mode-btn active" id="modeF" onclick="switchMode('function')">Function View<span>role → skills</span></button>
-    <button class="mode-btn" id="modeS" onclick="switchMode('skill')">Skill Search<span>skill → resources</span></button>
+  <div class="sb-search">
+    <input class="sbox" id="sbox" placeholder="Search function, skill, BU or leader..." oninput="renderSB(this.value)">
+    <div id="filterChips" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:7px"></div>
   </div>
-  <div class="sw"><input class="sbox" id="sbox" placeholder="Search..." oninput="renderSB(this.value)"></div>
   <div class="sb-list" id="sbList"></div>
 </aside>
 
+<!-- MAIN -->
 <main class="main">
   <div class="topbar">
     <div class="tb-left">
-      <div class="tb-mode" id="tbMode">Function View</div>
-      <div class="tb-title" id="tbTitle">Select a function from the sidebar</div>
+      <div class="tb-eyebrow" id="tbEye">Overview</div>
+      <div class="tb-title" id="tbTitle">BU-Wise Skill Mapping</div>
     </div>
     <div class="tb-right">
       <span class="dbadge demo" id="dBadge">⚠ Demo Resources</span>
       <button class="up-btn" id="upBtn" onclick="openModal()">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Upload Resource File
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload Resources
       </button>
     </div>
   </div>
-  <div class="content" id="mc">
-    <div class="welcome fi">
-      <div class="w-icon">🗂</div>
-      <h2>Skill Mapping Loaded</h2>
-      <p>Select a <strong>Function</strong> to view its required skillset and find resources — or switch to <strong>Skill Search</strong> to locate who has a specific skill.</p>
-    </div>
-  </div>
+
+  <div class="stats-row" id="statsRow"></div>
+  <div class="content" id="mc"></div>
 </main>
 </div>
 
+<!-- MODAL -->
 <div class="ov" id="ov" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <div class="m-hd"><div class="m-title">Upload Resource / People File</div><button class="m-close" onclick="closeModal()">✕</button></div>
-    <div class="m-sub">Upload your Excel or CSV file. Once loaded, clicking any skill will show who is available across your org.</div>
+    <div class="m-sub">Upload your Excel or CSV with people data. Skills column should match the skill names in the mapping.</div>
     <div class="dz" id="dz" onclick="document.getElementById('fileInput').click()"
       ondragover="event.preventDefault();this.classList.add('drag')"
       ondragleave="this.classList.remove('drag')"
@@ -241,13 +258,11 @@ table.rt tr:hover td{background:var(--bg)}
     <div class="ct">Expected Columns</div>
     <div class="cpills">
       <span class="cp req">Name</span><span class="cp req">Employee ID</span><span class="cp req">Skills</span>
-      <span class="cp req">Team / Department</span><span class="cp req">Availability</span>
+      <span class="cp req">Team / BU</span><span class="cp req">Availability</span>
       <span class="cp">Skill Level</span><span class="cp">Email</span>
     </div>
-    <div class="m-note">
-      <strong>Skills</strong>: comma-separated — <code style="background:var(--bg2);padding:1px 5px;border-radius:3px;font-size:10.5px">Java, Spring, Docker</code><br>
-      <strong>Availability</strong>: <code style="background:var(--bg2);padding:1px 5px;border-radius:3px;font-size:10.5px">Available</code> · <code style="background:var(--bg2);padding:1px 5px;border-radius:3px;font-size:10.5px">Occupied</code> · <code style="background:var(--bg2);padding:1px 5px;border-radius:3px;font-size:10.5px">Partial</code>
-    </div>
+    <div class="m-note"><strong>Skills</strong>: comma-separated — <code style="background:var(--bg2);padding:1px 4px;border-radius:3px;font-size:10px">Java, Spring, Docker</code><br>
+    <strong>Availability</strong>: <code style="background:var(--bg2);padding:1px 4px;border-radius:3px;font-size:10px">Available</code> · <code style="background:var(--bg2);padding:1px 4px;border-radius:3px;font-size:10px">Occupied</code> · <code style="background:var(--bg2);padding:1px 4px;border-radius:3px;font-size:10px">Partial</code></div>
     <div class="m-act">
       <button class="btn btn-demo" onclick="loadDemo()">Use Demo Data</button>
       <button class="btn btn-sec" onclick="closeModal()">Cancel</button>
@@ -255,208 +270,444 @@ table.rt tr:hover td{background:var(--bg)}
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-/* ════════════════════════════════════════
-   EXACT DATA — Copy_of_Skill_Mapping__SE.xlsx
-════════════════════════════════════════ */
-const ROLES = [
-  { name:"UI/UX SE",
-    lang:["Angular2+","ReactJs","JavaScript","TypeScript","HTML","CSS","React.JS","Redux","React Native","ES6+","GraphQL"],
-    db:["MongoDB","PostgreSQL","MySQL"], cloud:"AWS/Azure/GCP",
-    other:["Jenkins","Maven","SonarQube","Microfrontend","Java"], tags:["cloud","java"] },
-
-  { name:"OE",
-    lang:["Java","Spring","RESTful Webservices"],
-    db:["PL/SQL"], cloud:null, other:[], tags:["java"] },
-
-  { name:"CRM",
-    lang:["Java","Spring","RESTful Webservices","Springboot","Microservices"],
-    db:["PL/SQL"], cloud:"AWS/Azure/GCP",
-    other:["Design Patterns","REST","CI/CD","Domain experience in CRM"], tags:["cloud","java","devops"] },
-
-  { name:"Cloud BSS",
-    lang:["Core Java/J2EE","Spring","Spring Data","Spring Boot","REST","Microservices","Docker","Kubernetes","Jenkins","Maven","SonarQube"],
-    db:["SQL","Oracle","PostgreSQL"], cloud:"AWS/Azure/GCP",
-    other:["Cassandra","MongoDB","Kafka","NOSQL"], tags:["cloud","java","nosql","devops"] },
-
-  { name:"INT/TBAPI",
-    lang:["Java","Webservices","Microservices","Spring"],
-    db:["Oracle","MySQL"], cloud:"AWS/Azure/GCP",
-    other:["API","CI/CD","Kafka","RabbitMQ","Apache","Kubernetes","Docker"], tags:["cloud","java","devops"] },
-
-  { name:"OPF",
-    lang:["Java 7/8","J2EE","EJB","Servlets","JSP","JDBC","LOG4J","JSON","XML","Springboot","Spring REST","Spring MVC","Spring JDBC"],
-    db:["SQL","Oracle","PostgreSQL"], cloud:null,
-    other:["SOAP/REST","Microservice Development","Cloud experience (good to have)"], tags:["java"] },
-
-  { name:"Product Catalog",
-    lang:["PL/SQL","Java","Data Migration"],
-    db:["MySQL","PostgreSQL","Oracle"], cloud:"AWS/Azure/GCP",
-    other:["Telecom experience (must)","Product Support"], tags:["cloud","java"] },
-
-  { name:"Billing & Revenue Mgt",
-    lang:["C++"],
-    db:["MongoDB","PostgreSQL","MySQL","Oracle"], cloud:null,
-    other:["Unix Shell","Perl","PL/SQL Scripting"], tags:["cpp","nosql"] },
-
-  { name:"Migration",
-    lang:["PL/SQL","Procedures","Functions","Triggers","Query Writing"],
-    db:["Oracle","Performance Tuning","Indexes"], cloud:null,
-    other:["Database Migration Logic","BSS/OSS Migration Projects"], tags:[] },
-
-  { name:"Core Platform",
-    lang:["Java","Spring Security","Microservice","OOPS","Data Structures","Kafka","Docker","Kubernetes"],
-    db:["MongoDB","PostgreSQL","MySQL"], cloud:"AWS/Azure/GCP",
-    other:["Golang (Good to have)"], tags:["cloud","java","nosql","devops"] },
-
-  { name:"DevOps",
-    lang:["Jenkins","Github","Gitlab","Maven","Docker","Kubernetes"],
-    db:["MongoDB","PostgreSQL","MySQL"], cloud:"AWS/Azure/GCP",
-    other:["Prometheus","Grafana","SonarQube"], tags:["cloud","devops","nosql"] }
+/* ════════════════════════════════════════════
+   EXACT DATA — BU_Wise_Skill_Mapping
+════════════════════════════════════════════ */
+const BUS = [
+  {
+    id:'se', name:'SE', color:'var(--se)', bg:'var(--se-bg)', dot:'#1d4ed8',
+    label:'Software Engineering',
+    functions:[
+      {name:'UI/UX SE',leader:'Sunitha Kanapala',lang:['Angular2+','ReactJs','JavaScript','TypeScript','HTML','CSS','React.JS','Redux','React Native','ES6+','GraphQL'],db:['MongoDB','PostgreSQL','MySQL'],cloud:'AWS/Azure/GCP',other:['Jenkins','Maven','SonarQube','Microfrontend','Java'],tags:['cloud','java']},
+      {name:'OE',leader:'Bhagrav',lang:['Java','Spring','RESTful Webservices'],db:['PL/SQL'],cloud:null,other:[],tags:['java']},
+      {name:'CRM',leader:'Venkata J',lang:['Java','Spring','RESTful Webservices','Springboot','Microservices'],db:['PL/SQL'],cloud:'AWS/Azure/GCP',other:['Design Patterns','REST','CI/CD','Domain experience in CRM'],tags:['cloud','java','devops']},
+      {name:'Cloud BSS',leader:'Palanisamy Vishnu',lang:['Core Java/J2EE','Spring','Spring Data','Spring Boot','REST','Microservices','Docker','Kubernetes','Jenkins','Maven','SonarQube'],db:['SQL','Oracle','PostgreSQL'],cloud:'AWS/Azure/GCP',other:['Cassandra','MongoDB','Kafka','NOSQL'],tags:['cloud','java','nosql','devops']},
+      {name:'INT/TBAPI',leader:'Dhanashri Kate / Alexander Shcherbakov',lang:['Java','Webservices','Microservices','Spring'],db:['Oracle','MySQL'],cloud:'AWS/Azure/GCP',other:['API','CI/CD','Kafka','RabbitMQ','Apache','Kubernetes','Docker'],tags:['cloud','java','devops']},
+      {name:'OPF',leader:'Ihar Dubkou',lang:['Java 7/8','J2EE','EJB','Servlets','JSP','JDBC','LOG4J','JSON','XML','Springboot','Spring REST','Spring MVC','Spring JDBC'],db:['SQL','Oracle','PostgreSQL'],cloud:null,other:['SOAP/REST','Microservice Development','Cloud experience (good to have)'],tags:['java']},
+      {name:'Product Catalog',leader:null,lang:['PL/SQL','Java','Data Migration'],db:['MySQL','PostgreSQL','Oracle'],cloud:'AWS/Azure/GCP',other:['Telecom experience (must)','Product Support'],tags:['cloud','java']},
+      {name:'Billing & Revenue Mgt',leader:null,lang:['C++'],db:['MongoDB','PostgreSQL','MySQL','Oracle'],cloud:null,other:['Unix Shell','Perl','PL/SQL Scripting'],tags:['cpp','nosql']},
+      {name:'Migration',leader:'Nitesh Hatwar',lang:['PL/SQL','Procedures','Functions','Triggers','Query Writing'],db:['Oracle','Performance Tuning','Indexes'],cloud:null,other:['Database Migration Logic','BSS/OSS Migration Projects'],tags:[]},
+      {name:'Core Platform',leader:'Alexander Bobrov / Denis Melnikov',lang:['Java','Spring Security','Microservice','OOPS','Data Structures','Kafka','Docker','Kubernetes'],db:['MongoDB','PostgreSQL','MySQL'],cloud:'AWS/Azure/GCP',other:['Golang (Good to have)'],tags:['cloud','java','nosql','devops']},
+      {name:'DevOps (SE)',leader:'Bijoyendra Ratan Kundu',lang:['Jenkins','Github','Gitlab','Maven','Docker','Kubernetes'],db:['MongoDB','PostgreSQL','MySQL'],cloud:'AWS/Azure/GCP',other:['Prometheus','Grafana','SonarQube'],tags:['cloud','devops','nosql']},
+      {name:'Cloud OSS',leader:'Sergii Kutovoi',lang:['Core Java','Spring Boot','Microservice','Docker','Kubernetes'],db:['MongoDB','PostgreSQL','MySQL'],cloud:'AWS/Azure/GCP',other:['Golang (Good to have)'],tags:['cloud','java','nosql','devops']},
+      {name:'Resource Inventory',leader:'Andrei A Gavrilov',lang:['Java','SQL','PL/SQL'],db:['Oracle PL/SQL','SQL'],cloud:null,other:['Maven','SVN'],tags:['java']},
+      {name:'DMP-Core Platform',leader:null,lang:['Core Java','Microservice','Spring Security','Kafka','Docker','Kubernetes'],db:['MySQL','PostgreSQL','Oracle'],cloud:'AWS/Azure/GCP',other:['Cloud Experience (Good to Have)'],tags:['cloud','java','nosql','devops']},
+      {name:'ERP',leader:null,lang:["Java 8","Spring Boot","REST APIs","SOAP"],db:['Oracle SQL','PostgreSQL'],cloud:null,other:['JavaScript (good to have)'],tags:['java']},
+      {name:'RM Java',leader:'Mikhail Shishalov',lang:['Core Java','Java SE','Java EE','Web Services','JMS','JDBC','Hibernate','Spring Frameworks','Spring Boot','XML/XSLT','JAXB','Linux OS'],db:['SQL','PostgreSQL'],cloud:null,other:['NoSQL','GraphDB','Go','Python','Kafka','HTML','CSS','JavaScript'],tags:['java']},
+      {name:'OCS',leader:'Mikhail Shishalov',lang:['Core Java','Java SE','Java EE','Web Services','JMS','JDBC','Hibernate','Spring Frameworks','Spring Boot','XML/XSLT','JAXB','Linux OS'],db:[],cloud:null,other:[],tags:['java']},
+      {name:'Others - Dot Net',leader:null,lang:['C#','CSS','HTML','JavaScript','jQuery'],db:['SQL'],cloud:null,other:[],tags:[]},
+    ]
+  },
+  {
+    id:'sdsi', name:'SDSI', color:'var(--sdsi)', bg:'var(--sdsi-bg)', dot:'#0f766e',
+    label:'Systems & Dev Support Infra',
+    functions:[
+      {name:'Environment Admin (EA)',leader:'Hanu Pullammagari / Manu Mishra',lang:['Weblogic','WebSphere','Shell Scripting','Linux','Unix'],db:['Oracle DB','SQL'],cloud:'AWS / Azure / GCP / Oracle Cloud',other:['JBoss','Cloud CI/CD'],tags:['cloud','devops']},
+      {name:'Cloud Support',leader:'Danmal Jain',lang:['Kubernetes','Docker','Jenkins','OpenShift','Ansible','Groovy','Bash','Linux'],db:['SQL','PostgreSQL','Cassandra'],cloud:'AWS / Azure / GCP / Oracle Cloud',other:['SAAS','PAAS','Cost Optimization','Grafana','Prometheus','ELK'],tags:['cloud','devops','nosql']},
+      {name:'DevOps (SDSI)',leader:null,lang:['Ansible','Linux','Kubernetes','Docker'],db:['SQL','PostgreSQL','Cassandra'],cloud:'AWS / Azure / GCP / Oracle Cloud',other:['Weblogic','JBoss','WildFly','Tomcat'],tags:['cloud','devops','nosql']},
+      {name:'Monitoring Automation',leader:'Gaurav Y Sharma',lang:['Ansible','Python','Golang','Linux','T-SQL','Regex'],db:['Oracle','PostgreSQL','NoSQL'],cloud:'AWS / Azure / GCP / Oracle Cloud',other:['Icinga','Prometheus','Zabbix','Nagios','AppDynamics','Dynatrace','Docker','Kubernetes'],tags:['cloud','devops','nosql']},
+      {name:'DBA Team',leader:'Shailesh Satish Bhimgare',lang:['Oracle DBA','Linux','Unix','Shell Scripting','Ansible'],db:['Oracle DB','Cassandra DBA','PostgreSQL'],cloud:'Linux / AWS / Azure / GCP / Oracle Cloud',other:['CouchBase','Amazon Aurora DB','Networking','Weblogic','JBOSS'],tags:['cloud','devops','nosql']},
+    ]
+  },
+  {
+    id:'svt', name:'SVT', color:'var(--svt)', bg:'var(--svt-bg)', dot:'#7c3aed',
+    label:'Software Verification & Testing',
+    functions:[
+      {name:'Tools',leader:null,lang:['Apache','JMeter','Load Runner'],db:['Oracle','PostgreSQL','Cassandra'],cloud:'Kubernetes / Docker',other:[],tags:['devops']},
+      {name:'Programming & Scripting',leader:'Pradip Awhad / Omkar Kulkarni',lang:['Python','Java','Shell Scripting','Pearl'],db:[],cloud:'AWS / GCP / Azure',other:[],tags:['cloud','java']},
+      {name:'Monitor & Data Analysis',leader:'Manish Chandra / Deepak Kumar Patel',lang:['Grafana'],db:[],cloud:null,other:[],tags:[]},
+      {name:'Performance Testing',leader:'Naganna Danduboyana',lang:[],db:[],cloud:null,other:['Performance Testing Experience'],tags:[]},
+    ]
+  },
+  {
+    id:'nrm', name:'NRM', color:'var(--nrm)', bg:'var(--nrm-bg)', dot:'#b45309',
+    label:'Network Resource Management',
+    functions:[
+      {name:'Custom Integration',leader:'Bandi Srinivas Rao / Vijay Ashok Gurav',lang:['C++','PL/SQL','Telecom BSS'],db:['PL/SQL','PostgreSQL'],cloud:null,other:['Java'],tags:['cpp']},
+      {name:'Migration (NRM)',leader:'Sanjeev Sharma / Ashish Deb',lang:['PL/SQL','BSS Migration','Scripting'],db:['Oracle','PostgreSQL'],cloud:null,other:[],tags:[]},
+      {name:'Mediation',leader:'Satyajit Mohanthy / Ashish Deb',lang:['Java','Telecom BSS','Mediation'],db:['PL/SQL','PostgreSQL'],cloud:null,other:[],tags:['java']},
+      {name:'Configuration',leader:'Phani Suman Somayajula / Ashish Deb',lang:['PL/SQL','BSS Configuration'],db:['PL/SQL','PostgreSQL'],cloud:null,other:[],tags:[]},
+      {name:'Rating & Billing',leader:null,lang:['PL/SQL','C','C++'],db:[],cloud:null,other:[],tags:['cpp']},
+    ]
+  },
+  {
+    id:'rd', name:'R&D', color:'var(--rd)', bg:'var(--rd-bg)', dot:'#be185d',
+    label:'Research & Development',
+    functions:[
+      {name:'RBM R&D',leader:'Viswanath Nandanavanam / Ravi Kiran Samayamantry',lang:['C','C++','Scripting Languages'],db:['Any DB'],cloud:null,other:['Telecom BSS Knowledge','Data Structures','Algorithms'],tags:['cpp']},
+      {name:'RBM ICE L3',leader:'Rao Venkata / Aezaz Mohammad',lang:['Java','Core Java','J2EE','Spring Boot','C','C++','Pro C','Scripting'],db:['Oracle','PL/SQL'],cloud:null,other:['Problem Solving Skills'],tags:['java','cpp']},
+      {name:'Blueprint E2E',leader:'Pushpakraj Mehta',lang:['BA Roles'],db:[],cloud:null,other:['Telecom BSS & OSS'],tags:[]},
+      {name:'OCS ICE L3',leader:'Rao Venkata / Venkat Ramana Reddy',lang:['Java','Core Java','J2EE','Spring Boot','Scripting'],db:['Oracle','PL/SQL'],cloud:null,other:['Problem Solving Skills'],tags:['java']},
+    ]
+  },
+  {
+    id:'testing', name:'Testing', color:'var(--testing)', bg:'var(--testing-bg)', dot:'#065f46',
+    label:'QA & Testing',
+    functions:[
+      {name:'Functional (Manual)',leader:'Kshitij Vinod Sutawane',lang:['Manual Testing','Telecom BSS'],db:['PL/SQL'],cloud:'UNIX',other:['Test Case Design','Test Case Execution','Stakeholder Management'],tags:[]},
+      {name:'Automation',leader:'Alexander Shirobokov',lang:['Java','Selenium','Cucumber BDD','TestNG','Playwright','SQL','API Testing'],db:[],cloud:null,other:['Test Automation Strategy','QA Methodology','Bug Management'],tags:['java']},
+    ]
+  },
+  {
+    id:'it', name:'IT', color:'var(--it)', bg:'var(--it-bg)', dot:'#374151',
+    label:'Information Technology',
+    functions:[
+      {name:'Cloud Support & Dev',leader:'Sunny Biswas / Prasanna Ramesh',lang:['Shell/Bash Scripting','OpenStack Admin','Linux Administration','CEPH Storage','Containerization'],db:['Basic Knowledge'],cloud:'OpenStack / AWS',other:['Ansible','Docker','Linux','Networking'],tags:['cloud','devops']},
+      {name:'CI/VCS Support',leader:'Purusothaman Raghu',lang:['Shell Script','Python','Java'],db:[],cloud:'HyperV',other:['Jenkins','GitLab','Git','Artifactory','Nexus','Linux Admin','Apache','Tomcat'],tags:['cloud','java','devops']},
+      {name:'IT Application Mgmt',leader:'Gangasani BalaKrishna Reddy',lang:['Java','Groovy','React','Spring'],db:['MySQL'],cloud:'AWS',other:['Linux','PostgreSQL','Automations'],tags:['cloud','java']},
+      {name:'IT Cyber Resilience',leader:'Arwin Prakash Fernandis / Suvajit',lang:['Vulnerability Management','SIEM Tools','DLP','EDR','WAF'],db:[],cloud:'On-premise / AWS / Azure / Cloud Security',other:['Elastic','Kibana','Citrix','Nessus','Orca','CISA'],tags:['cloud']},
+      {name:'IT Helpdesk',leader:'Neelesh Sachania',lang:[],db:[],cloud:null,other:['Desktop L1/L2','Software Installations','Hardware Troubleshooting','JIRA','ServiceNow','Active Directory','Networking'],tags:[]},
+      {name:'IT Infra (SAN Storage)',leader:'Pravyn Pattaraju',lang:['Shell','Python'],db:[],cloud:'AWS / Azure / GCP (Beginner)',other:['SAN Protocols','NVMe/SCSI/FC/NFS','Storage Virtualization','Grafana','Icinga','Pure','NetApp','Brocade'],tags:['cloud']},
+      {name:'IT Infra PM Group',leader:'Ajay Kumar N / Sri / Yuri',lang:['Terraform','Ansible','Chef','SQL','Python'],db:['PostgreSQL','Oracle','AWS-DB'],cloud:'AWS / GCP / Azure / Oracle',other:['Networking','Linux','Storage','Security','Project Management'],tags:['cloud','devops']},
+      {name:'IT Portal Solutions',leader:'Vikas Jain / Gangasani Bala',lang:['Java','Groovy','React','Spring'],db:['MySQL'],cloud:'AWS',other:['Automations','JIRA','Confluence','GitHub','Jenkins','Atlassian'],tags:['cloud','java','devops']},
+      {name:'Monitoring Group',leader:'Randeep P R',lang:['Python','GoLang','Bash'],db:['ClickHouse','MariaDB','PostgreSQL','MongoDB'],cloud:'AWS / Azure',other:['Linux','Icinga','Nagios','Grafana','Graylog','Elasticsearch','Ansible','GitLab','Prometheus','Podman','Docker'],tags:['cloud','devops','nosql']},
+      {name:'Linux & Unix OS',leader:'Aljo Antony',lang:['Shell','Python','Bash'],db:['MySQL','PostgreSQL'],cloud:'OpenStack',other:['LVM','RAID','Kernel Tuning','Clustering','Backup Applications','Multipath','JIRA'],tags:['cloud','devops']},
+      {name:'Network Dev & Support',leader:'Srivathsa V',lang:['Shell','Python'],db:[],cloud:'OpenStack / AWS / Azure / Shakti Cloud',other:['Linux','VMware','Grafana','Routing','Switching','Security','Load Balancing','CUCM','VoIP'],tags:['cloud','devops']},
+    ]
+  }
 ];
 
-const DEMO = [
-  {name:"Arjun Sharma",      id:"SE-1001",team:"Platform Engineering", skills:["Java","Spring","Microservices","Docker","Kubernetes","Kafka"],                       level:"Expert",       availability:"Available"},
-  {name:"Priya Nair",        id:"SE-1002",team:"Frontend",             skills:["ReactJs","TypeScript","JavaScript","HTML","CSS","Redux","GraphQL","Angular2+"],       level:"Expert",       availability:"Available"},
-  {name:"Karthik Rajan",     id:"SE-1003",team:"Data Engineering",     skills:["Java","PL/SQL","Oracle","Spring","RESTful Webservices"],                              level:"Intermediate", availability:"Occupied"},
-  {name:"Divya Menon",       id:"SE-1004",team:"Cloud BSS",            skills:["Java","Spring Boot","Kafka","Docker","Kubernetes","PostgreSQL","Oracle","SonarQube"], level:"Expert",       availability:"Partial"},
-  {name:"Suresh Kumar",      id:"SE-1005",team:"Integration",          skills:["Java","Webservices","Spring","MySQL","RabbitMQ","Kafka","API","CI/CD"],                level:"Intermediate", availability:"Available"},
-  {name:"Lakshmi Prasad",    id:"SE-1006",team:"Billing",              skills:["C++","MongoDB","PostgreSQL","PL/SQL Scripting","Unix Shell","Perl"],                  level:"Expert",       availability:"Available"},
-  {name:"Anil Verma",        id:"SE-1007",team:"DevOps",               skills:["Jenkins","Docker","Kubernetes","Grafana","Prometheus","SonarQube","Maven","Github","Gitlab"], level:"Expert", availability:"Occupied"},
-  {name:"Meena Subramaniam", id:"SE-1008",team:"CRM",                  skills:["Java","Spring","Springboot","PL/SQL","CI/CD","REST","Microservices","Design Patterns"],level:"Intermediate", availability:"Available"},
-  {name:"Rahul Iyer",        id:"SE-1009",team:"Migration",            skills:["PL/SQL","Oracle","Performance Tuning","Triggers","Functions","Procedures","Query Writing"], level:"Expert", availability:"Partial"},
-  {name:"Sneha Pillai",      id:"SE-1010",team:"Core Platform",        skills:["Java","Spring Security","Kafka","MongoDB","OOPS","Data Structures","Docker","Kubernetes"], level:"Intermediate", availability:"Available"},
-  {name:"Vikram Nayar",      id:"SE-1011",team:"Product Catalog",      skills:["Java","MySQL","PostgreSQL","Data Migration","PL/SQL","Telecom experience (must)","Oracle"], level:"Intermediate", availability:"Occupied"},
-  {name:"Pooja Reddy",       id:"SE-1012",team:"Frontend",             skills:["Angular2+","TypeScript","JavaScript","HTML","CSS","React Native","GraphQL","ES6+","ReactJs"], level:"Expert", availability:"Available"},
-  {name:"Ganesh Murthi",     id:"SE-1013",team:"Integration",          skills:["Java","Microservices","API","Docker","Apache","Kubernetes","CI/CD","RabbitMQ"],        level:"Expert",       availability:"Available"},
-  {name:"Swathi Krishnan",   id:"SE-1014",team:"Cloud BSS",            skills:["Java","Spring Boot","Microservices","Oracle","AWS/Azure/GCP","Jenkins","Maven","SonarQube","Spring Data"], level:"Expert", availability:"Partial"},
-  {name:"Deepak Joshi",      id:"SE-1015",team:"OPF",                  skills:["Java","J2EE","EJB","Servlets","Spring MVC","Spring JDBC","JDBC","SQL","JSP","XML","JSON"], level:"Intermediate", availability:"Available"},
-  {name:"Anita Krishnamurthy",id:"SE-1016",team:"Platform Engineering",skills:["Java","Spring Security","Kafka","Kubernetes","Docker","MongoDB","PostgreSQL","OOPS","Data Structures"], level:"Expert", availability:"Available"},
-  {name:"Ramesh Babu",       id:"SE-1017",team:"BSS/OSS",              skills:["PL/SQL","Oracle","Triggers","Functions","Procedures","Query Writing","Database Migration Logic","BSS/OSS Migration Projects"], level:"Expert", availability:"Available"},
-  {name:"Nalini Seshadri",   id:"SE-1018",team:"Product",              skills:["PL/SQL","Java","Data Migration","MySQL","PostgreSQL","Oracle","Product Support","Telecom experience (must)"], level:"Intermediate", availability:"Occupied"},
-  {name:"Praveen Balaji",    id:"SE-1019",team:"DevOps",               skills:["Jenkins","Docker","Kubernetes","Github","Gitlab","Prometheus","Grafana","Maven"],      level:"Intermediate", availability:"Available"},
-  {name:"Chitra Mohan",      id:"SE-1020",team:"Integration",          skills:["Java","Spring","Webservices","Microservices","RabbitMQ","Kafka","Apache"],              level:"Expert",       availability:"Partial"},
+const BU_MAP = {};
+BUS.forEach(bu => bu.functions.forEach(fn => BU_MAP[fn.name] = bu));
+
+const DEMO_RESOURCES = [
+  {name:'Arjun Sharma',      id:'SE-1001',team:'SE - Platform',      skills:['Java','Spring','Microservices','Docker','Kubernetes','Kafka'],                    level:'Expert',      availability:'Available'},
+  {name:'Priya Nair',        id:'SE-1002',team:'SE - Frontend',      skills:['ReactJs','TypeScript','JavaScript','HTML','CSS','Redux','GraphQL','Angular2+'],   level:'Expert',      availability:'Available'},
+  {name:'Karthik Rajan',     id:'SE-1003',team:'SE - Data',          skills:['Java','PL/SQL','Oracle','Spring','RESTful Webservices'],                          level:'Intermediate',availability:'Occupied'},
+  {name:'Divya Menon',       id:'SE-1004',team:'SE - Cloud BSS',     skills:['Java','Spring Boot','Kafka','Docker','Kubernetes','PostgreSQL','Oracle'],         level:'Expert',      availability:'Partial'},
+  {name:'Suresh Kumar',      id:'SE-1005',team:'SE - Integration',   skills:['Java','Webservices','Spring','MySQL','RabbitMQ','Kafka','API','CI/CD'],           level:'Intermediate',availability:'Available'},
+  {name:'Lakshmi Prasad',    id:'SE-1006',team:'SE - Billing',       skills:['C++','MongoDB','PostgreSQL','PL/SQL Scripting','Unix Shell','Perl'],              level:'Expert',      availability:'Available'},
+  {name:'Anil Verma',        id:'SE-1007',team:'SDSI - DevOps',      skills:['Jenkins','Docker','Kubernetes','Grafana','Prometheus','SonarQube','Maven'],       level:'Expert',      availability:'Occupied'},
+  {name:'Meena Subramaniam', id:'SE-1008',team:'SE - CRM',           skills:['Java','Spring','Springboot','PL/SQL','CI/CD','REST','Microservices'],             level:'Intermediate',availability:'Available'},
+  {name:'Rahul Iyer',        id:'SE-1009',team:'SE - Migration',     skills:['PL/SQL','Oracle','Performance Tuning','Triggers','Functions','Procedures'],       level:'Expert',      availability:'Partial'},
+  {name:'Sneha Pillai',      id:'SE-1010',team:'SE - Core Platform', skills:['Java','Spring Security','Kafka','MongoDB','OOPS','Data Structures','Docker'],     level:'Intermediate',availability:'Available'},
+  {name:'Vikram Nayar',      id:'SE-1011',team:'SE - Product',       skills:['Java','MySQL','PostgreSQL','Data Migration','PL/SQL','Telecom experience (must)'],level:'Intermediate',availability:'Occupied'},
+  {name:'Pooja Reddy',       id:'SE-1012',team:'SE - Frontend',      skills:['Angular2+','TypeScript','JavaScript','HTML','CSS','React Native','GraphQL'],     level:'Expert',      availability:'Available'},
+  {name:'Ganesh Murthi',     id:'SE-1013',team:'SE - INT',           skills:['Java','Microservices','API','Docker','Apache','Kubernetes','CI/CD'],              level:'Expert',      availability:'Available'},
+  {name:'Swathi Krishnan',   id:'SE-1014',team:'SE - Cloud BSS',     skills:['Java','Spring Boot','Microservices','Oracle','AWS/Azure/GCP','Jenkins','Maven'],  level:'Expert',      availability:'Partial'},
+  {name:'Gaurav Sharma',     id:'SDSI-001',team:'SDSI - Monitoring', skills:['Ansible','Python','Prometheus','Zabbix','Nagios','Docker','Kubernetes','Linux'],  level:'Expert',      availability:'Available'},
+  {name:'Danmal Jain',       id:'SDSI-002',team:'SDSI - Cloud',      skills:['Kubernetes','Docker','Jenkins','Ansible','Bash','Linux','PostgreSQL','Cassandra'],level:'Expert',      availability:'Partial'},
+  {name:'Ramesh Babu',       id:'NRM-001', team:'NRM - Migration',   skills:['PL/SQL','Oracle','Triggers','Functions','Procedures','BSS Migration'],           level:'Expert',      availability:'Available'},
+  {name:'Kshitij Sutawane',  id:'TEST-001',team:'Testing - Manual',  skills:['Manual Testing','PL/SQL','Telecom BSS','Test Case Design'],                      level:'Intermediate',availability:'Available'},
+  {name:'Alexander S',       id:'TEST-002',team:'Testing - Auto',    skills:['Java','Selenium','Cucumber BDD','TestNG','Playwright','SQL','API Testing'],       level:'Expert',      availability:'Occupied'},
+  {name:'Randeep PR',        id:'IT-001',  team:'IT - Monitoring',   skills:['Python','GoLang','Bash','Grafana','Prometheus','Docker','MongoDB','PostgreSQL'],   level:'Expert',      availability:'Available'},
 ];
 
-/* ── state ── */
-let resources=[...DEMO], mode='function', selFn=null, selSk=null, activePill=null;
+let resources=[...DEMO_RESOURCES], selFn=null, activePill=null;
 
-/* ── skill index ── */
-function buildIdx(){
-  const m={};
-  ROLES.forEach(r=>[...r.lang,...r.db,...(r.cloud?[r.cloud]:[]),...r.other].forEach(s=>{const k=s.trim();if(k)m[k]=(m[k]||0)+1}));
-  return Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([name,count])=>({name,count}));
+/* ── BU color helpers ── */
+const BU_COLORS = {se:'#1d4ed8',sdsi:'#0f766e',svt:'#7c3aed',nrm:'#b45309',rd:'#be185d',testing:'#065f46',it:'#374151'};
+function buColor(id){return BU_COLORS[id]||'#374151'}
+
+/* ── Sidebar ── */
+let activeFilter=null;
+
+function renderFilterChips(){
+  const chips=[
+    {key:'skill',label:'Skill',  col:'var(--se)',  bg:'var(--se-bg)'},
+    {key:'unit', label:'BU',     col:'var(--sdsi)',bg:'var(--sdsi-bg)'},
+    {key:'fn',   label:'Function',col:'var(--svt)',bg:'var(--svt-bg)'},
+    {key:'leader',label:'Leader',col:'var(--rd)',  bg:'var(--rd-bg)'},
+  ];
+  const el=document.getElementById('filterChips');
+  if(!el) return;
+  el.innerHTML=chips.map(c=>
+    `<span class="fchip ${activeFilter===c.key?'active':''}"
+      style="background:${c.bg};color:${c.col};border-color:${c.col}44"
+      onclick="setFilter('${c.key}')">${c.label}</span>`
+  ).join('');
 }
-const SKILLS=buildIdx();
-const LSET=new Set(ROLES.flatMap(r=>r.lang));
-const DSET=new Set(ROLES.flatMap(r=>r.db));
 
-/* ── mode switch ── */
-function switchMode(m){
-  mode=m; selFn=null; selSk=null; activePill=null;
-  document.getElementById('modeF').classList.toggle('active',m==='function');
-  document.getElementById('modeS').classList.toggle('active',m==='skill');
-  document.getElementById('tbMode').textContent=m==='function'?'Function View':'Skill Search';
-  document.getElementById('tbTitle').textContent=m==='function'?'Select a function from the sidebar':'Select a skill to find resources';
-  document.getElementById('sbox').value='';
-  renderSB(''); showWelcome();
+function setFilter(key){
+  activeFilter=activeFilter===key?null:key;
+  renderFilterChips();
+  renderSB(document.getElementById('sbox').value);
 }
 
-/* ── sidebar ── */
 function renderSB(q){
   const list=document.getElementById('sbList'); list.innerHTML='';
-  const lq=q.toLowerCase();
-  if(mode==='function'){
-    const rows=ROLES.filter(r=>!q||r.name.toLowerCase().includes(lq)||[...r.lang,...r.db,...r.other].some(s=>s.toLowerCase().includes(lq)));
-    if(!rows.length){list.innerHTML='<div style="padding:1rem 11px;color:var(--ink3);font-size:12px;">No functions match</div>';return}
-    addSec(list,'SE Functions');
-    rows.forEach(r=>{
-      const d=mk('div','fn-item'+(selFn===r.name?' active':''));
-      d.innerHTML=`<div class="fn-name">${r.name}</div><div class="tag-row">
-        ${r.tags.includes('cloud')?'<span class="tag tag-cloud">Cloud</span>':''}
-        ${r.tags.includes('java')?'<span class="tag tag-java">Java</span>':''}
-        ${r.tags.includes('nosql')?'<span class="tag tag-nosql">NoSQL</span>':''}
-        ${r.tags.includes('devops')?'<span class="tag tag-devops">DevOps</span>':''}
-        ${r.tags.includes('cpp')?'<span class="tag tag-cpp">C++</span>':''}
-      </div>`;
-      d.onclick=()=>selectFn(r.name); list.appendChild(d);
+  const lq=(q||'').trim().toLowerCase();
+  renderFilterChips();
+
+  const ov=mk('div','fn-item'+(selFn===null&&!lq?' active':''));
+  ov.innerHTML='<span class="fn-label" style="color:var(--ink2);font-size:12px">← Overview</span>';
+  ov.onclick=()=>showOverview(); list.appendChild(ov);
+
+  if(!lq && !activeFilter){
+    BUS.forEach(bu=>{
+      const grp=mk('div','bu-group');
+      const hd=mk('div','bu-header');
+      hd.innerHTML=`<span class="bu-dot" style="background:${bu.dot}"></span><span class="bu-name" style="color:${bu.dot}">${bu.name}</span><span class="bu-ct">${bu.functions.length}fn</span>`;
+      hd.onclick=()=>focusBU(bu.id);
+      grp.appendChild(hd);
+      bu.functions.forEach(fn=>{
+        const d=mk('div','fn-item'+(selFn===fn.name?' active':''));
+        d.innerHTML=`<span class="fn-label">${fn.name}</span>${fn.leader?`<span class="fn-leader">${fn.leader.split('/')[0].trim()}</span>`:''}`;
+        d.onclick=()=>selectFn(fn.name,bu.id); grp.appendChild(d);
+      });
+      list.appendChild(grp);
+    });
+    return;
+  }
+
+  const allFns=BUS.flatMap(b=>b.functions.map(f=>({...f,buId:b.id,buName:b.name,buDot:b.dot})));
+  const results=[];
+  allFns.forEach(fn=>{
+    const mFn    =fn.name.toLowerCase().includes(lq||'x_x');
+    const mBU    =fn.buName.toLowerCase().includes(lq||'x_x');
+    const mLeader=fn.leader&&fn.leader.toLowerCase().includes(lq||'x_x');
+    const mSkills=lq?[...fn.lang,...fn.db,...(fn.cloud?[fn.cloud]:[]),...fn.other].filter(s=>s.toLowerCase().includes(lq)):[];
+    const mSkill =mSkills.length>0;
+
+    let passes=false, matchType=null;
+    if(activeFilter==='fn')    {passes=!lq||mFn;    matchType='fn';}
+    else if(activeFilter==='unit')  {passes=!lq||mBU;    matchType='bu';}
+    else if(activeFilter==='leader'){passes=!lq||mLeader; matchType='leader';}
+    else if(activeFilter==='skill') {passes=!lq||mSkill;  matchType='skill';}
+    else{
+      passes=!lq||(mFn||mBU||mLeader||mSkill);
+      matchType=mSkill?'skill':mLeader?'leader':mBU?'bu':mFn?'fn':null;
+    }
+    if(passes) results.push({fn,matchType,mSkills});
+  });
+
+  if(!results.length){
+    list.innerHTML+=`<div class="no-res">No results for <strong>"${lq}"</strong><br><span style="font-size:10px">Try searching by skill, BU name, function or leader</span></div>`;
+    return;
+  }
+
+  if(lq){
+    const secs=[
+      {key:'fn',    label:'Functions',    badge:(r)=>''},
+      {key:'bu',    label:'BU Match',     badge:(r)=>`<span class="mtag mtag-bu">${r.fn.buName}</span>`},
+      {key:'leader',label:'Leaders',      badge:(r)=>`<span class="mtag mtag-ld">${r.fn.leader?r.fn.leader.split('/')[0].trim().split(' ')[0]:''}</span>`},
+      {key:'skill', label:'Skills',       badge:(r)=>`<span class="mtag mtag-sk">${r.mSkills[0]||''}${r.mSkills.length>1?' +'+(r.mSkills.length-1):''}</span>`},
+    ];
+    secs.forEach(sec=>{
+      const sr=results.filter(r=>r.matchType===sec.key);
+      if(!sr.length) return;
+      const lbl=mk('div','sb-sec'); lbl.textContent=`${sec.label} (${sr.length})`;
+      list.appendChild(lbl);
+      sr.forEach(r=>{
+        const d=mk('div','fn-item'+(selFn===r.fn.name?' active':''));
+        d.innerHTML=`<span class="fn-label">${r.fn.name}</span>${sec.badge(r)}`;
+        d.onclick=()=>selectFn(r.fn.name,r.fn.buId);
+        list.appendChild(d);
+      });
     });
   } else {
-    const rows=SKILLS.filter(s=>!q||s.name.toLowerCase().includes(lq));
-    if(!rows.length){list.innerHTML='<div style="padding:1rem 11px;color:var(--ink3);font-size:12px;">No skills match</div>';return}
-    const groups=[
-      {label:'Languages & Frameworks',items:rows.filter(s=>LSET.has(s.name))},
-      {label:'Databases',             items:rows.filter(s=>DSET.has(s.name)&&!LSET.has(s.name))},
-      {label:'Cloud & Tools',         items:rows.filter(s=>!LSET.has(s.name)&&!DSET.has(s.name))},
-    ];
-    groups.forEach(g=>{
-      if(!g.items.length)return;
-      addSec(list,g.label);
-      g.items.forEach(s=>{
-        const d=mk('div','sk-item'+(selSk===s.name?' active':''));
-        d.innerHTML=`<span class="sk-name">${s.name}</span><span class="sk-ct">${s.count}r</span>`;
-        d.onclick=()=>selectSk(s.name); list.appendChild(d);
+    BUS.forEach(bu=>{
+      const br=results.filter(r=>r.fn.buId===bu.id);
+      if(!br.length) return;
+      const grp=mk('div','bu-group');
+      const hd=mk('div','bu-header');
+      hd.innerHTML=`<span class="bu-dot" style="background:${bu.dot}"></span><span class="bu-name" style="color:${bu.dot}">${bu.name}</span><span class="bu-ct">${br.length}fn</span>`;
+      hd.onclick=()=>focusBU(bu.id); grp.appendChild(hd);
+      br.forEach(r=>{
+        const d=mk('div','fn-item'+(selFn===r.fn.name?' active':''));
+        d.innerHTML=`<span class="fn-label">${r.fn.name}</span>${r.fn.leader?`<span class="fn-leader">${r.fn.leader.split('/')[0].trim()}</span>`:''}`;
+        d.onclick=()=>selectFn(r.fn.name,r.fn.buId); grp.appendChild(d);
       });
+      list.appendChild(grp);
     });
   }
 }
-
-function addSec(p,t){const d=mk('div','list-sec');d.textContent=t;p.appendChild(d)}
 function mk(t,c){const e=document.createElement(t);e.className=c;return e}
 
-/* ── welcome ── */
-function showWelcome(){
-  const icon=mode==='function'?'🗂':'🔍';
-  const msg=mode==='function'
-    ?'Click any SE function to see its full required skillset. Then click any skill pill to instantly find available resources.'
-    :'Click any skill from the sidebar to see which roles need it and who in your org is available.';
-  document.getElementById('mc').innerHTML=`<div class="welcome fi"><div class="w-icon">${icon}</div><h2>${mode==='function'?'Function View':'Skill Search'}</h2><p>${msg}</p></div>`;
+/* ── Stats ── */
+function renderStats(){
+  const totalFns = BUS.reduce((s,b)=>s+b.functions.length,0);
+  const cloudFns = BUS.flatMap(b=>b.functions).filter(f=>f.cloud).length;
+  const javaFns  = BUS.flatMap(b=>b.functions).filter(f=>f.tags&&f.tags.includes('java')).length;
+  const leaders  = BUS.flatMap(b=>b.functions).filter(f=>f.leader).length;
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat-card" onclick="showFilteredView('all')" title="View all Business Units">
+      <div class="stat-val">${BUS.length}</div><div class="stat-lbl">Business Units</div>
+    </div>
+    <div class="stat-card" onclick="showFilteredView('all')" title="View all functions">
+      <div class="stat-val">${totalFns}</div><div class="stat-lbl">Total Functions</div>
+    </div>
+    <div class="stat-card" onclick="showFilteredView('cloud')" title="View cloud-enabled functions">
+      <div class="stat-val" style="color:var(--sdsi)">${cloudFns}</div><div class="stat-lbl">Cloud-enabled</div>
+    </div>
+    <div class="stat-card" onclick="showFilteredView('java')" title="View Java-based functions">
+      <div class="stat-val" style="color:var(--se)">${javaFns}</div><div class="stat-lbl">Java-based roles</div>
+    </div>
+    <div class="stat-card" onclick="showFilteredView('leaders')" title="View functions with assigned leaders">
+      <div class="stat-val" style="color:var(--rd)">${leaders}</div><div class="stat-lbl">Leaders mapped</div>
+    </div>
+  `;
 }
 
-/* ── select function ── */
-function selectFn(name){
-  selFn=name; activePill=null;
-  document.getElementById('tbTitle').textContent=name;
-  renderSB(document.getElementById('sbox').value);
-  const r=ROLES.find(x=>x.name===name);
-  const tot=r.lang.length+r.db.length+(r.cloud?1:0)+r.other.length;
-  const ps=(arr,cls)=>arr.map(s=>`<span class="pill ${cls}" onclick="inline(this,'${e(s)}')">${s}<span class="arr">→</span></span>`).join('');
+function showFilteredView(filter){
+  selFn=null; activePill=null;
+  const allFns = BUS.flatMap(b=>b.functions.map(f=>({...f,buId:b.id,buName:b.name,buLabel:b.label,buDot:b.dot,buBg:b.bg})));
+  let filtered, title, eye;
+
+  if(filter==='all'){
+    filtered=allFns; title='All Functions'; eye='Overview — All BUs';
+  } else if(filter==='cloud'){
+    filtered=allFns.filter(f=>f.cloud); title=`Cloud-Enabled Functions (${filtered.length})`; eye='Filtered — Cloud Required';
+  } else if(filter==='java'){
+    filtered=allFns.filter(f=>f.tags&&f.tags.includes('java')); title=`Java-Based Functions (${filtered.length})`; eye='Filtered — Java Stack';
+  } else if(filter==='leaders'){
+    filtered=allFns.filter(f=>f.leader); title=`Functions with Leaders (${filtered.length})`; eye='Filtered — Leaders Mapped';
+  }
+
+  document.getElementById('tbEye').textContent=eye;
+  document.getElementById('tbTitle').textContent=title;
+  renderSB('');
+
+  const filterBadge = {
+    cloud:`<span style="background:var(--sdsi-bg);color:var(--sdsi);border:1px solid var(--sdsi-mid);font-size:10px;padding:2px 9px;border-radius:4px;font-weight:700;font-family:'JetBrains Mono',monospace">☁ Cloud Required</span>`,
+    java:`<span style="background:var(--se-bg);color:var(--se);border:1px solid var(--se-mid);font-size:10px;padding:2px 9px;border-radius:4px;font-weight:700;font-family:'JetBrains Mono',monospace">Java Stack</span>`,
+    leaders:`<span style="background:var(--rd-bg);color:var(--rd);border:1px solid var(--rd-mid);font-size:10px;padding:2px 9px;border-radius:4px;font-weight:700;font-family:'JetBrains Mono',monospace">Leader Assigned</span>`,
+    all:''
+  }[filter];
+
   document.getElementById('mc').innerHTML=`
   <div class="fi">
-    <div class="fn-dh">
-      <div>
-        <div class="fn-dn">${r.name}</div>
-        <div class="fn-dm">
-          <span class="fn-stat">${tot} skills required</span>
-          ${r.cloud?`<span class="fn-stat" style="background:var(--teal-bg);color:var(--teal)">☁ Cloud Required</span>`:''}
-          ${r.tags.map(t=>`<span class="fn-stat">${t[0].toUpperCase()+t.slice(1)}</span>`).join('')}
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap">
+      ${filterBadge}
+      <span style="font-size:12px;color:var(--ink3)">${filtered.length} functions across ${[...new Set(filtered.map(f=>f.buId))].length} BUs</span>
+      <button onclick="showOverview()" style="margin-left:auto;background:none;border:1px solid var(--border2);border-radius:6px;padding:4px 10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer">← Back to Overview</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
+      ${filtered.map(fn=>{
+        const tot=fn.lang.length+fn.db.length+(fn.cloud?1:0)+fn.other.length;
+        return `<div class="sc" style="cursor:pointer;border-top:2px solid ${fn.buDot}" onclick="selectFn('${e(fn.name)}','${fn.buId}')">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+            <span style="width:7px;height:7px;border-radius:50%;background:${fn.buDot};display:inline-block;flex-shrink:0"></span>
+            <span style="font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:${fn.buDot};font-family:'JetBrains Mono',monospace">${fn.buName}</span>
+          </div>
+          <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">${fn.name}</div>
+          ${fn.leader
+            ?`<div style="font-size:11px;color:var(--ink3);margin-bottom:8px">👤 ${fn.leader}</div>`
+            :`<div style="font-size:11px;color:var(--border2);margin-bottom:8px;font-style:italic">No leader assigned</div>`}
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
+            ${fn.cloud?`<span style="font-size:9px;padding:1px 6px;border-radius:3px;background:var(--sdsi-bg);color:var(--sdsi);font-weight:600">☁ Cloud</span>`:''}
+            ${fn.tags&&fn.tags.includes('java')?`<span style="font-size:9px;padding:1px 6px;border-radius:3px;background:var(--se-bg);color:var(--se);font-weight:600">Java</span>`:''}
+            ${fn.tags&&fn.tags.includes('nosql')?`<span style="font-size:9px;padding:1px 6px;border-radius:3px;background:var(--nrm-bg);color:var(--nrm);font-weight:600">NoSQL</span>`:''}
+            ${fn.tags&&fn.tags.includes('devops')?`<span style="font-size:9px;padding:1px 6px;border-radius:3px;background:#fee2e2;color:#991b1b;font-weight:600">DevOps</span>`:''}
+            ${fn.tags&&fn.tags.includes('cpp')?`<span style="font-size:9px;padding:1px 6px;border-radius:3px;background:var(--svt-bg);color:var(--svt);font-weight:600">C++</span>`:''}
+          </div>
+          <div style="font-size:11px;color:var(--ink3)">${tot} skills · click to explore</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+/* ── Overview ── */
+function showOverview(){
+  selFn=null; activePill=null;
+  renderSB('');
+  document.getElementById('tbEye').textContent='Overview';
+  document.getElementById('tbTitle').textContent='BU-Wise Skill Mapping';
+  document.getElementById('mc').innerHTML=`
+  <div class="fi">
+    <div class="bu-overview">${BUS.map(bu=>`
+      <div class="bu-card" style="border-top-color:${bu.dot}" onclick="focusBU('${bu.id}')">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="width:10px;height:10px;border-radius:50%;background:${bu.dot};display:inline-block;flex-shrink:0"></span>
+          <span style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:${bu.dot};font-family:'JetBrains Mono',monospace">${bu.name}</span>
         </div>
-      </div>
-      <div style="font-size:12px;color:var(--ink3);font-style:italic;text-align:right;max-width:210px;line-height:1.6">Click any skill pill to find available resources</div>
+        <div class="bu-card-name">${bu.label}</div>
+        <div class="bu-card-ct">${bu.functions.length} functions · ${bu.functions.filter(f=>f.leader).length} leaders mapped</div>
+        <div class="bu-card-fns">${bu.functions.slice(0,5).map(f=>`<span class="fn-pill">${f.name}</span>`).join('')}${bu.functions.length>5?`<span class="fn-pill">+${bu.functions.length-5} more</span>`:''}</div>
+      </div>`).join('')}
     </div>
+  </div>`;
+}
+
+function focusBU(id){
+  const bu=BUS.find(b=>b.id===id);
+  if(!bu)return;
+  document.getElementById('tbEye').textContent=`BU — ${bu.name}`;
+  document.getElementById('tbTitle').textContent=bu.label;
+  document.getElementById('mc').innerHTML=`
+  <div class="fi">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
+      ${bu.functions.map(fn=>{
+        const tot=fn.lang.length+fn.db.length+(fn.cloud?1:0)+fn.other.length;
+        return `<div class="sc" style="cursor:pointer;border-top:2px solid ${bu.dot}" onclick="selectFn('${e(fn.name)}','${bu.id}')">
+          <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">${fn.name}</div>
+          ${fn.leader?`<div style="font-size:11px;color:var(--ink3);margin-bottom:8px">👤 ${fn.leader}</div>`:'<div style="font-size:11px;color:var(--ink3);margin-bottom:8px;font-style:italic">No leader assigned</div>'}
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+            ${fn.tags&&fn.tags.includes('cloud')?`<span style="font-size:9px;padding:1px 6px;border-radius:3px;background:var(--sdsi-bg);color:var(--sdsi);font-weight:600">Cloud</span>`:''}
+            ${fn.tags&&fn.tags.includes('java')?`<span style="font-size:9px;padding:1px 6px;border-radius:3px;background:var(--se-bg);color:var(--se);font-weight:600">Java</span>`:''}
+            ${fn.tags&&fn.tags.includes('nosql')?`<span style="font-size:9px;padding:1px 6px;border-radius:3px;background:var(--nrm-bg);color:var(--nrm);font-weight:600">NoSQL</span>`:''}
+            ${fn.tags&&fn.tags.includes('devops')?`<span style="font-size:9px;padding:1px 6px;border-radius:3px;background:#fee2e2;color:#991b1b;font-weight:600">DevOps</span>`:''}
+            ${fn.tags&&fn.tags.includes('cpp')?`<span style="font-size:9px;padding:1px 6px;border-radius:3px;background:var(--svt-bg);color:var(--svt);font-weight:600">C++</span>`:''}
+          </div>
+          <div style="font-size:11px;color:var(--ink3)">${tot} skills required</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+/* ── Select function ── */
+function selectFn(name, buId){
+  selFn=name; activePill=null;
+  const bu=buId?BUS.find(b=>b.id===buId):BU_MAP[name];
+  const fn=bu.functions.find(f=>f.name===name);
+  document.getElementById('tbEye').textContent=`${bu.name} — Function Detail`;
+  document.getElementById('tbTitle').textContent=name;
+  renderSB('');
+  const tot=fn.lang.length+fn.db.length+(fn.cloud?1:0)+fn.other.length;
+  const ps=(arr,cls)=>arr.map(s=>`<span class="pill ${cls}" onclick="inlinePill(this,'${e(s)}')">${s}<span class="arr">→</span></span>`).join('');
+  document.getElementById('mc').innerHTML=`
+  <div class="fi">
+    <div class="role-header">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span class="bu-badge" style="background:${bu.bg};color:${bu.dot};border:1px solid ${bu.dot}33">
+          <span style="width:6px;height:6px;border-radius:50%;background:${bu.dot};display:inline-block"></span>${bu.name}
+        </span>
+        <span style="font-size:11px;color:var(--ink3)">${bu.label}</span>
+      </div>
+      <div class="role-name">${fn.name}</div>
+      <div class="role-meta">
+        <span class="meta-pill">${tot} skills required</span>
+        ${fn.cloud?`<span class="meta-pill" style="background:var(--sdsi-bg);color:var(--sdsi)">☁ ${fn.cloud}</span>`:''}
+        ${fn.tags&&fn.tags.map(t=>`<span class="meta-pill">${t[0].toUpperCase()+t.slice(1)}</span>`).join('')}
+      </div>
+    </div>
+
+    ${fn.leader?`<div class="leader-card">
+      <div class="leader-avatar" style="background:${bu.bg};color:${bu.dot}">${fn.leader.split(/[\s\/]/)[0][0]}${fn.leader.split(/[\s\/]/)[1]?.[0]||''}</div>
+      <div class="leader-info">
+        <div class="leader-label">Function Lead</div>
+        <div class="leader-name">${fn.leader}</div>
+      </div>
+    </div>`:''}
+
     <div class="skill-grid">
-      <div class="sc">
-        <div class="sc-head"><div class="sc-icon" style="background:var(--blue-bg)">💻</div><div class="sc-label">Languages & Frameworks</div><div class="sc-note">${r.lang.length} skills</div></div>
-        <div class="pills">${ps(r.lang,'lang')}</div>
-      </div>
-      <div class="sc">
-        <div class="sc-head"><div class="sc-icon" style="background:var(--amber-bg)">🗄</div><div class="sc-label">Databases</div><div class="sc-note">${r.db.length} skills</div></div>
-        <div class="pills">${ps(r.db,'db')}</div>
-      </div>
-      ${r.cloud?`<div class="sc">
-        <div class="sc-head"><div class="sc-icon" style="background:var(--teal-bg)">☁️</div><div class="sc-label">Cloud</div></div>
-        <div class="pills"><span class="pill cloud" onclick="inline(this,'${e(r.cloud)}')">${r.cloud}<span class="arr">→</span></span></div>
+      ${fn.lang.length?`<div class="sc">
+        <div class="sc-head"><div class="sc-icon" style="background:var(--se-bg)">💻</div><div class="sc-label">Languages & Frameworks</div><div class="sc-ct">${fn.lang.length}</div></div>
+        <div class="pills">${ps(fn.lang,'lang')}</div>
       </div>`:''}
-      ${r.other.length?`<div class="sc">
-        <div class="sc-head"><div class="sc-icon" style="background:var(--purple-bg)">⚙️</div><div class="sc-label">Other Skills</div><div class="sc-note">${r.other.length} skills</div></div>
-        <div class="pills">${ps(r.other,'other')}</div>
+      ${fn.db.length?`<div class="sc">
+        <div class="sc-head"><div class="sc-icon" style="background:var(--nrm-bg)">🗄</div><div class="sc-label">Databases</div><div class="sc-ct">${fn.db.length}</div></div>
+        <div class="pills">${ps(fn.db,'db')}</div>
+      </div>`:''}
+      ${fn.cloud?`<div class="sc">
+        <div class="sc-head"><div class="sc-icon" style="background:var(--sdsi-bg)">☁️</div><div class="sc-label">Cloud</div></div>
+        <div class="pills"><span class="pill cloud" onclick="inlinePill(this,'${e(fn.cloud)}')">${fn.cloud}<span class="arr">→</span></span></div>
+      </div>`:''}
+      ${fn.other.length?`<div class="sc">
+        <div class="sc-head"><div class="sc-icon" style="background:var(--svt-bg)">⚙️</div><div class="sc-label">Other Skills</div><div class="sc-ct">${fn.other.length}</div></div>
+        <div class="pills">${ps(fn.other,'other')}</div>
       </div>`:''}
     </div>
+    <div style="font-size:12px;color:var(--ink3);font-style:italic;margin-bottom:.75rem">↑ Click any skill to find available resources</div>
     <div id="iPanel"></div>
   </div>`;
 }
 
-function inline(el,skill){
+function inlinePill(el,skill){
   if(activePill)activePill.classList.remove('on');
   el.classList.add('on'); activePill=el;
   const p=document.getElementById('iPanel');
@@ -464,32 +715,7 @@ function inline(el,skill){
   p.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-/* ── select skill ── */
-function selectSk(name){
-  selSk=name;
-  document.getElementById('tbTitle').textContent=name;
-  renderSB(document.getElementById('sbox').value);
-  const matches=findRes(name);
-  const rNeed=ROLES.filter(r=>[...r.lang,...r.db,...(r.cloud?[r.cloud]:[]),...r.other].some(s=>sm(s,name)));
-  const av=matches.filter(r=>r.availability==='Available').length;
-  const pt=matches.filter(r=>r.availability==='Partial').length;
-  const oc=matches.filter(r=>r.availability==='Occupied').length;
-  document.getElementById('mc').innerHTML=`
-  <div class="fi">
-    <div class="sl-name">${name}</div>
-    <div class="lu-stats">
-      <div class="lu-stat"><div class="lu-val">${matches.length}</div><div class="lu-lbl">People with skill</div></div>
-      <div class="lu-stat"><div class="lu-val" style="color:var(--green)">${av}</div><div class="lu-lbl">Available now</div></div>
-      <div class="lu-stat"><div class="lu-val" style="color:var(--amber)">${pt}</div><div class="lu-lbl">Partially free</div></div>
-      <div class="lu-stat"><div class="lu-val" style="color:var(--red)">${oc}</div><div class="lu-lbl">Occupied</div></div>
-      <div class="lu-stat"><div class="lu-val" style="color:var(--blue)">${rNeed.length}</div><div class="lu-lbl">Roles need it</div></div>
-    </div>
-    ${rNeed.length?`<div class="rn-title">Functions that require this skill</div><div class="rn-pills">${rNeed.map(r=>`<span class="rn-pill" onclick="switchMode('function');selectFn('${e(r.name)}')">${r.name}</span>`).join('')}</div>`:''}
-    ${resTable(name,matches)}
-  </div>`;
-}
-
-/* ── resource helpers ── */
+/* ── Resource helpers ── */
 function sm(a,b){const n=s=>s.toLowerCase().replace(/[^a-z0-9]/g,'');const na=n(a),nb=n(b);return na===nb||na.includes(nb)||nb.includes(na)}
 function findRes(sk){return resources.filter(r=>r.skills.some(s=>sm(s,sk)))}
 
@@ -502,73 +728,49 @@ function resTable(skill,matches){
         <td><div style="display:flex;align-items:center"><div class="ldots">${dots(r.level)}</div><span class="llbl">${r.level}</span></div></td>
         <td><span class="ab ${r.availability.toLowerCase()}">${r.availability}</span></td>
       </tr>`).join('')
-    :`<tr><td colspan="4"><div class="nores"><strong>No resources found for "${skill}"</strong>Upload your resource file to see actual people data.</div></td></tr>`;
+    :`<tr><td colspan="4"><div class="nores"><strong>No resources found for "${skill}"</strong>Upload your resource file to see real people data.</div></td></tr>`;
   return `<div class="rp">
     <div class="rp-head">
-      <div class="rp-l"><span class="rp-lbl">Resources for</span><span class="chip">${skill}</span></div>
-      <span class="rp-ct">${matches.length} ${matches.length===1?'person':'people'} found</span>
+      <div class="rp-l"><span class="rp-lbl">Resources with</span><span class="chip">${skill}</span></div>
+      <span class="rp-ct">${matches.length} ${matches.length===1?'person':'people'}</span>
     </div>
-    <table class="rt"><thead><tr><th>Name</th><th>Team / Department</th><th>Skill Level</th><th>Availability</th></tr></thead><tbody>${rows}</tbody></table>
+    <table class="rt"><thead><tr><th>Name</th><th>Team / BU</th><th>Skill Level</th><th>Availability</th></tr></thead><tbody>${rows}</tbody></table>
   </div>`;
 }
 
-/* ── upload ── */
+/* ── Upload ── */
 function openModal(){document.getElementById('ov').classList.add('open')}
 function closeModal(){document.getElementById('ov').classList.remove('open')}
 function handleDrop(ev){ev.preventDefault();document.getElementById('dz').classList.remove('drag');if(ev.dataTransfer.files[0])procFile(ev.dataTransfer.files[0])}
 function handleFS(ev){if(ev.target.files[0])procFile(ev.target.files[0])}
-
 function procFile(file){
   const ext=file.name.split('.').pop().toLowerCase();
   const rd=new FileReader();
   rd.onload=ev=>{
     try{
       let rows;
-      if(ext==='csv') rows=parseCSV(ev.target.result);
+      if(ext==='csv')rows=parseCSV(ev.target.result);
       else{const wb=XLSX.read(ev.target.result,{type:'binary'});rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''})}
       resources=normRows(rows);
-      setBadge(file.name,resources.length);
+      const b=document.getElementById('dBadge');b.className='dbadge loaded';b.textContent=`✓ ${resources.length} loaded`;
+      document.getElementById('upBtn').classList.add('ok');
       closeModal();
-      if(selFn)selectFn(selFn); else if(selSk)selectSk(selSk);
+      if(selFn){const bu=BU_MAP[selFn];if(bu)selectFn(selFn,bu.id)}
     }catch(err){alert('Error: '+err.message)}
   };
   ext==='csv'?rd.readAsText(file):rd.readAsBinaryString(file);
 }
-
-function parseCSV(txt){
-  const lines=txt.trim().split('\n');
-  const hdr=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
-  return lines.slice(1).map(l=>{const v=l.split(',').map(x=>x.trim().replace(/^"|"$/g,''));const o={};hdr.forEach((h,i)=>o[h]=v[i]||'');return o});
-}
+function parseCSV(txt){const l=txt.trim().split('\n'),h=l[0].split(',').map(x=>x.trim().replace(/^"|"$/g,''));return l.slice(1).map(r=>{const v=r.split(',').map(x=>x.trim().replace(/^"|"$/g,''));const o={};h.forEach((k,i)=>o[k]=v[i]||'');return o})}
 function cv(row,opts){for(const o of opts){const k=Object.keys(row).find(k=>k.toLowerCase().replace(/[\s_\-]/g,'').includes(o.toLowerCase().replace(/[\s_\-]/g,'')));if(k&&row[k])return row[k]}return''}
-function normRows(rows){
-  return rows.map((r,i)=>({
-    name:  cv(r,['name','fullname','employeename'])||`Resource ${i+1}`,
-    id:    cv(r,['employeeid','id','empid','staffid'])||`R-${String(i+1).padStart(4,'0')}`,
-    team:  cv(r,['team','department','dept','group','bu','division'])||'Unassigned',
-    skills:(cv(r,['skills','skill','technologies','tech','competencies','expertise'])||'').split(/[,;|]/).map(s=>s.trim()).filter(Boolean),
-    level: cv(r,['level','skilllevel','proficiency','rating','grade'])||'Intermediate',
-    availability:normAvail(cv(r,['availability','status','available','avail'])),
-    email: cv(r,['email','mail','emailid'])||'',
-  })).filter(r=>r.skills.length>0);
-}
-function normAvail(v){const s=(v||'').toLowerCase();if(s.includes('avail')||s==='yes'||s==='y'||s==='free')return'Available';if(s.includes('partial')||s==='p')return'Partial';if(s.includes('occup')||s.includes('busy')||s==='no'||s==='n')return'Occupied';return'Available'}
-function setBadge(name,count){
-  document.getElementById('dBadge').className='dbadge loaded';
-  document.getElementById('dBadge').textContent=`✓ ${count} people loaded`;
-  document.getElementById('upBtn').classList.add('ok');
-}
-function loadDemo(){
-  resources=[...DEMO];
-  document.getElementById('dBadge').className='dbadge demo';
-  document.getElementById('dBadge').textContent=`⚠ Demo (${DEMO.length})`;
-  closeModal();
-  if(selFn)selectFn(selFn); else if(selSk)selectSk(selSk);
-}
+function normRows(rows){return rows.map((r,i)=>({name:cv(r,['name','fullname'])||`Resource ${i+1}`,id:cv(r,['employeeid','id','empid'])||`R-${String(i+1).padStart(4,'0')}`,team:cv(r,['team','department','dept','bu'])||'Unassigned',skills:(cv(r,['skills','skill','technologies'])||'').split(/[,;|]/).map(s=>s.trim()).filter(Boolean),level:cv(r,['level','skilllevel','proficiency'])||'Intermediate',availability:normAvail(cv(r,['availability','status','available']))})).filter(r=>r.skills.length>0)}
+function normAvail(v){const s=(v||'').toLowerCase();if(s.includes('avail')||s==='yes'||s==='y')return'Available';if(s.includes('partial'))return'Partial';if(s.includes('occup')||s.includes('busy')||s==='no')return'Occupied';return'Available'}
+function loadDemo(){resources=[...DEMO_RESOURCES];const b=document.getElementById('dBadge');b.className='dbadge demo';b.textContent=`⚠ Demo (${DEMO_RESOURCES.length})`;closeModal();if(selFn){const bu=BU_MAP[selFn];if(bu)selectFn(selFn,bu.id)}}
 function e(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
 
-/* init */
+/* ── Init ── */
+renderStats();
 renderSB('');
+showOverview();
 </script>
 </body>
 </html>
