@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorkforceIQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --navy:#0f1923;--navy2:#162030;--navy3:#1d2d3e;--navy4:#0b1219;
+  --panel:#182535;--card:#1e2f42;--card2:#243650;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --red:#e05c6a;--red-bg:rgba(224,92,106,0.12);--red-mid:rgba(224,92,106,0.28);
+  --amber:#e8963a;--amber-bg:rgba(232,150,58,0.12);--amber-mid:rgba(232,150,58,0.28);
+  --blue:#5b9bd6;--blue-bg:rgba(91,155,214,0.12);--blue-mid:rgba(91,155,214,0.28);
+  --green:#3dbf82;--green-bg:rgba(61,191,130,0.12);--green-mid:rgba(61,191,130,0.28);
+  --teal:#2ec4b6;--teal-bg:rgba(46,196,182,0.12);--teal-mid:rgba(46,196,182,0.28);
+  --violet:#9b7fe8;--violet-bg:rgba(155,127,232,0.12);--violet-mid:rgba(155,127,232,0.28);
+  --grey:#7a9ab0;--grey-bg:rgba(122,154,176,0.1);
+  --text:#dde8f0;--text2:#8aabbf;--text3:#4d6a7a;
+  --shadow:0 6px 28px rgba(0,0,0,0.5);--r:14px;--rs:9px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--navy);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh}
+input,select,textarea,button{font-family:'Inter',sans-serif}
+a{text-decoration:none}
+
+/* LOGIN */
+.auth-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem;position:relative;overflow:hidden}
+.auth-wrap::before{content:'';position:absolute;top:-300px;right:-200px;width:700px;height:700px;border-radius:50%;border:80px solid rgba(74,143,193,0.04);pointer-events:none}
+.auth-wrap::after{content:'';position:absolute;bottom:-200px;left:-200px;width:500px;height:500px;border-radius:50%;border:60px solid rgba(230,57,80,0.04);pointer-events:none}
+.auth-card{background:var(--panel);border:1px solid var(--border2);border-radius:18px;padding:2.5rem;width:100%;max-width:430px;box-shadow:var(--shadow);position:relative;z-index:1}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:5px}
+.brand-icon{width:38px;height:38px;background:var(--red);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff;flex-shrink:0}
+.brand-name{font-size:1.2rem;font-weight:800;color:var(--text)}
+.brand-sub{font-size:11.5px;color:var(--text3);margin-bottom:2rem}
+.role-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.5rem}
+.rtab{padding:10px 8px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--card);cursor:pointer;text-align:center;transition:all .18s}
+.rtab:hover{background:var(--card2)}
+.rtab.active{border-color:var(--blue);background:var(--blue-bg)}
+.rtab-icon{font-size:1.2rem;margin-bottom:3px}
+.rtab-name{font-size:12px;font-weight:700;color:var(--text)}
+.rtab.active .rtab-name{color:var(--blue)}
+.rtab-desc{font-size:10px;color:var(--text3);margin-top:1px}
+.fl{margin-bottom:1rem}
+.fl label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:5px;font-family:'JetBrains Mono',monospace}
+.fi{width:100%;padding:10px 13px;background:var(--card);border:1px solid var(--border2);border-radius:var(--rs);font-size:13px;color:var(--text);outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--blue);background:var(--card2)}
+.fi::placeholder{color:var(--text3)}
+.fi option{background:var(--navy2)}
+.err-msg{display:none;font-size:12px;color:var(--red);background:var(--red-bg);border:1px solid var(--red-mid);border-radius:6px;padding:8px 12px;margin-bottom:.75rem}
+.btn-login{width:100%;padding:12px;background:var(--red);color:#fff;border:none;border-radius:var(--rs);font-size:13.5px;font-weight:700;cursor:pointer;transition:opacity .2s;letter-spacing:.01em}
+.btn-login:hover{opacity:.88}
+.hint{font-size:10.5px;color:var(--text3);text-align:center;margin-top:.75rem;font-family:'JetBrains Mono',monospace}
+.db-status{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--text3);margin-top:.75rem;justify-content:center}
+.db-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);animation:pulse 1.5s ease-in-out infinite}
+.db-dot.ok{background:var(--green);animation:none}
+.db-dot.err{background:var(--red);animation:none}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* APP */
+#app{display:none;flex-direction:column;min-height:100vh}
+.topnav{background:var(--navy4);border-bottom:1px solid var(--border);padding:.7rem 1.75rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;gap:1rem;flex-wrap:wrap}
+.nav-brand{display:flex;align-items:center;gap:8px}
+.nav-icon{width:28px;height:28px;background:var(--red);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff}
+.nav-name{font-size:.95rem;font-weight:800;color:var(--text)}
+.nav-name span{color:var(--red)}
+.nav-tabs{display:flex;gap:2px}
+.ntab{padding:5px 13px;border-radius:6px;font-size:12.5px;font-weight:600;color:var(--text3);cursor:pointer;transition:all .15s;border:none;background:none}
+.ntab:hover{background:var(--card);color:var(--text2)}
+.ntab.active{background:var(--blue-bg);color:var(--blue)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.uchip{font-size:10px;padding:4px 9px;background:var(--card);border-radius:5px;color:var(--text2);font-family:'JetBrains Mono',monospace;border:1px solid var(--border)}
+.lout{font-size:11px;padding:5px 10px;border:1px solid var(--border2);border-radius:6px;background:none;cursor:pointer;color:var(--text3);transition:all .15s}
+.lout:hover{background:var(--red-bg);color:var(--red);border-color:var(--red-mid)}
+.abody{flex:1;padding:1.5rem 1.75rem 3rem;max-width:1440px;margin:0 auto;width:100%}
+
+.page{display:none}
+.page.active{display:block;animation:fi .2s ease}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.phd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
+.ptitle{font-size:1.25rem;font-weight:800;color:var(--text);letter-spacing:-.02em}
+.psub{font-size:12px;color:var(--text3);margin-top:2px}
+
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:var(--rs);font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s;border:1px solid var(--border2);display:inline-flex;align-items:center;gap:6px}
+.b-red{background:var(--red);color:#fff;border-color:var(--red)}.b-red:hover{opacity:.88}
+.b-blue{background:var(--blue);color:#fff;border-color:var(--blue)}.b-blue:hover{opacity:.88}
+.b-green{background:var(--green);color:#fff;border-color:var(--green)}.b-green:hover{opacity:.88}
+.b-ghost{background:var(--card);color:var(--text2)}.b-ghost:hover{background:var(--card2)}
+.b-amber{background:var(--amber);color:#fff;border-color:var(--amber)}.b-amber:hover{opacity:.88}
+
+/* STATS */
+.srow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:1.5rem}
+.stat{background:var(--panel);border:1px solid var(--border);border-radius:var(--rs);padding:.9rem 1rem;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.sc-red::before{background:var(--red)}.sc-amber::before{background:var(--amber)}.sc-blue::before{background:var(--blue)}.sc-green::before{background:var(--green)}.sc-grey::before{background:var(--grey)}
+.stat:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.3);border-color:var(--border2)}
+.sv{font-size:1.75rem;font-weight:800;line-height:1;margin-bottom:4px;letter-spacing:-.03em}
+.sl{font-size:10.5px;color:var(--text3);font-weight:500}
+.sarr{position:absolute;bottom:8px;right:10px;font-size:9px;color:var(--text3);opacity:0;transition:opacity .15s;font-family:'JetBrains Mono',monospace}
+.stat-icon{font-size:1.1rem;margin-bottom:4px;display:block}
+.stat:hover .sarr{opacity:1}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 9px;border-radius:99px;font-weight:600}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.bg{background:var(--green-bg);color:#4ade80;border:1px solid var(--green-mid)}.bg::before{background:#4ade80}
+.ba{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-mid)}.ba::before{background:var(--amber)}
+.br{background:var(--red-bg);color:var(--red);border:1px solid var(--red-mid)}.br::before{background:var(--red)}
+.bb{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-mid)}.bb::before{background:var(--blue)}
+
+/* TABLE */
+.tw{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.tbar{padding:.85rem 1.1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.srch{padding:7px 10px 7px 28px;background:var(--card);border:1px solid var(--border2);border-radius:7px;font-size:12.5px;color:var(--text);outline:none;min-width:220px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%235a7285' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:9px center}
+.srch:focus{border-color:var(--blue)}
+.srch::placeholder{color:var(--text3)}
+.fsel{padding:7px 10px;background:var(--card);border:1px solid var(--border2);border-radius:7px;font-size:12.5px;color:var(--text);outline:none}
+.fsel option{background:var(--navy2)}
+table{width:100%;border-collapse:collapse}
+th{padding:9px 12px;text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);background:var(--panel);white-space:nowrap;font-family:'JetBrains Mono',monospace}
+td{padding:10px 12px;font-size:12.5px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.015)}
+.en{font-weight:700;color:var(--text);cursor:pointer}.en:hover{color:var(--blue)}
+.eid{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-top:1px}
+.ttag{font-size:10.5px;padding:2px 7px;border-radius:4px;background:var(--card2);color:var(--text2);font-weight:500;white-space:nowrap}
+.stag{font-size:10px;padding:1px 6px;border-radius:3px;background:var(--blue-bg);color:var(--blue);font-family:'JetBrains Mono',monospace;border:1px solid var(--blue-mid);display:inline-block;margin:1px}
+.tv{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)}
+.abtns{display:flex;gap:5px}
+.ab{padding:3px 9px;border-radius:5px;font-size:10.5px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .14s}
+.av{background:var(--grey-bg);color:var(--grey)}.av:hover{background:rgba(143,163,177,0.2)}
+.ae{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-mid)}.ae:hover{background:var(--blue-mid)}
+.ad{background:var(--red-bg);color:var(--red);border-color:var(--red-mid)}.ad:hover{background:var(--red-mid)}
+
+/* MODAL */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto}
+.mo.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:680px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.mhd{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.mtitle{font-size:1rem;font-weight:800;color:var(--text)}
+.mclose{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--text3)}.mclose:hover{color:var(--text)}
+.mbody{padding:1.5rem}
+.mft{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.fg{margin-bottom:1rem}
+.fg label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:5px;font-family:'JetBrains Mono',monospace}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+.ff{grid-column:1/-1}
+.fsec{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin:1.25rem 0 .75rem;padding-bottom:5px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace}
+.fsec span{color:var(--amber);margin-right:4px}
+
+/* DASH */
+.dgrid{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:1.5rem}
+.dc{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem}
+.dct{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:1.1rem;font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:6px}
+.dct::before{content:'';width:3px;height:14px;background:var(--red);border-radius:2px;display:inline-block}
+.brow{margin-bottom:10px}
+.blbls{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500}
+.btrack{height:7px;background:var(--card);border-radius:4px;overflow:hidden}
+.bfill{height:100%;border-radius:4px;transition:width .7s ease}
+.lrow{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+.lrow:last-child{border-bottom:none}
+.ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.lval{margin-left:auto;font-weight:700;font-family:'JetBrains Mono',monospace;font-size:11px}
+.aitem{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;margin-bottom:6px;font-size:12px;cursor:pointer;transition:opacity .14s}
+.aitem:hover{opacity:.85}
+.aicon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+
+/* PROFILE */
+.pfhd{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding:1.25rem;background:var(--card);border:1px solid var(--border2);border-radius:var(--r)}
+.pfav{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;flex-shrink:0}
+.pfname{font-size:1.1rem;font-weight:800;color:var(--text)}
+.pfmeta{font-size:11.5px;color:var(--text3);margin-top:3px}
+.pfgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem}
+.pfc{background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:1rem}
+.pfct{font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.85rem;font-family:'JetBrains Mono',monospace}
+.pff{display:flex;justify-content:space-between;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--border);font-size:12.5px;gap:8px}
+.pff:last-child{border-bottom:none}
+.pfl{color:var(--text3);flex-shrink:0}
+.pfv{color:var(--text);font-weight:500;text-align:right}
+.spills{display:flex;flex-wrap:wrap;gap:5px}
+
+/* CONNECT */
+.citem{background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:1rem;margin-bottom:8px;display:flex;gap:12px;border-left:3px solid}
+.cd{border-left-color:var(--green)}.cp2{border-left-color:var(--amber)}.co{border-left-color:var(--red)}
+.cdot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex-shrink:0}
+
+/* UPLOAD */
+.upz{border:2px dashed var(--border2);border-radius:10px;padding:2.5rem 2rem;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:1.25rem}
+.upz:hover,.upz.drag{border-color:var(--blue);background:var(--blue-bg)}
+
+/* SKILLS */
+.sbuhd{display:flex;align-items:center;gap:8px;margin-bottom:.75rem;margin-top:1.5rem}
+.sbudot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.sbuname{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+.sfng{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:10px}
+.sfnc{background:var(--panel);border:1px solid var(--border);border-radius:var(--rs);padding:1rem;border-top:2px solid transparent;transition:border-color .18s}
+.sfnc:hover{border-color:var(--border2)}
+.sfnn{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px}
+.sfnl{font-size:11px;color:var(--text3);margin-bottom:8px}
+.sfns{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;margin-top:7px;font-family:'JetBrains Mono',monospace}
+.sfnv{font-size:11.5px;color:var(--text2);line-height:1.5}
+.stab{padding:7px 16px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--text3);cursor:pointer;border:none;background:none;transition:all .15s}
+.stab:hover{background:var(--card2);color:var(--text2)}
+.stab-active{background:var(--navy);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+
+/* SQL MODAL */
+.sqlmo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:1.5rem}
+.sqlmo.open{display:flex}
+.sqlcard{background:var(--panel);border:2px solid var(--amber);border-radius:16px;padding:2rem;width:100%;max-width:580px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.sqlta{width:100%;height:200px;font-size:10px;font-family:'JetBrains Mono',monospace;background:var(--navy);border:1px solid var(--border2);border-radius:7px;padding:10px;color:#7dd3fc;resize:none;outline:none;margin:10px 0}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:10px 18px;border-radius:8px;font-size:12.5px;font-weight:600;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none;max-width:340px}
+.toast.show{opacity:1}
+.tok{background:#1a6b47;color:#fff;border:1px solid var(--green-mid)}.terr{background:#7a1e28;color:#fff;border:1px solid var(--red-mid)}.tinfo{background:#1e3a5a;color:#fff;border:1px solid var(--blue-mid)}
+
+@media(max-width:900px){.srow{grid-template-columns:repeat(2,1fr)}.dgrid{grid-template-columns:1fr}.fg2{grid-template-columns:1fr}.pfgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="loginWrap" class="auth-wrap">
+  <div class="auth-card">
+    <div class="brand">
+      <div class="brand-icon">W</div>
+      <div class="brand-name">WorkforceIQ</div>
+    </div>
+    <div class="brand-sub">Skill mapping · Resource tracking · HR connects</div>
+    <div class="role-tabs">
+      <div class="rtab active" onclick="selRole('master',this)">
+        <div class="rtab-icon">🔐</div>
+        <div class="rtab-name">Master</div>
+        <div class="rtab-desc">Full access</div>
+      </div>
+      <div class="rtab" onclick="selRole('hr',this)">
+        <div class="rtab-icon">👥</div>
+        <div class="rtab-name">HR</div>
+        <div class="rtab-desc">People & connects</div>
+      </div>
+      <div class="rtab" onclick="selRole('manager',this)">
+        <div class="rtab-icon">📊</div>
+        <div class="rtab-name">Manager</div>
+        <div class="rtab-desc">Team & skills</div>
+      </div>
+    </div>
+    <div class="fl">
+      <label id="roleLabel">Master — Username</label>
+      <input class="fi" id="lu" placeholder="Enter username">
+    </div>
+    <div class="fl">
+      <label>Password</label>
+      <input class="fi" id="lp" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="err-msg" id="lerr">Invalid credentials. Please try again.</div>
+    <button class="btn-login" onclick="doLogin()">Sign In</button>
+    <div class="hint">master/master123 &nbsp;·&nbsp; hr/hr123 &nbsp;·&nbsp; manager/mgr123</div>
+    <div class="db-status"><span class="db-dot" id="dbDot"></span><span id="dbTxt">Connecting to database...</span></div>
+  </div>
+</div>
+
+<!-- ══ SQL SETUP MODAL ══ -->
+<div class="sqlmo" id="sqlMo">
+  <div class="sqlcard">
+    <div style="text-align:center;margin-bottom:1.25rem">
+      <div style="font-size:1.8rem;margin-bottom:8px">⚠️</div>
+      <div style="font-size:1rem;font-weight:800;color:var(--amber)">One-time database setup needed</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:6px;line-height:1.6">Your Supabase is connected but tables don't exist yet.<br>Run this SQL once — takes 30 seconds.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1rem">
+      <div style="background:var(--card);border-radius:7px;padding:9px 13px;display:flex;align-items:center;gap:10px">
+        <div style="width:24px;height:24px;border-radius:50%;background:var(--amber);color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+        <div style="font-size:12px;color:var(--text2)">Click <strong style="color:var(--amber)">Copy SQL</strong> below</div>
+      </div>
+      <div style="background:var(--card);border-radius:7px;padding:9px 13px;display:flex;align-items:center;gap:10px">
+        <div style="width:24px;height:24px;border-radius:50%;background:var(--amber);color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+        <div style="font-size:12px;color:var(--text2)">Click <strong style="color:var(--blue)">Open SQL Editor</strong> → paste → click <strong style="color:var(--blue)">Run</strong></div>
+      </div>
+      <div style="background:var(--card);border-radius:7px;padding:9px 13px;display:flex;align-items:center;gap:10px">
+        <div style="width:24px;height:24px;border-radius:50%;background:var(--amber);color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+        <div style="font-size:12px;color:var(--text2)">Click <strong style="color:var(--green)">Done — Reload App</strong></div>
+      </div>
+    </div>
+    <textarea class="sqlta" id="sqlTa" readonly></textarea>
+    <div style="display:flex;gap:8px">
+      <button onclick="copySql()" style="flex:1;background:var(--amber);color:#fff;border:none;padding:10px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📋 Copy SQL</button>
+      <a href="https://supabase.com/dashboard/project/zwxlqergspcuvdmpwqbt/sql/new" target="_blank" style="flex:1;background:var(--blue);color:#fff;padding:10px;border-radius:8px;font-size:13px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center">🔗 Open SQL Editor</a>
+      <button onclick="location.reload()" style="flex:1;background:var(--green);color:#fff;border:none;padding:10px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">✓ Done — Reload</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app">
+  <nav class="topnav">
+    <div class="nav-brand">
+      <div class="nav-icon">W</div>
+      <div class="nav-name">Workforce<span>IQ</span></div>
+    </div>
+    <div class="nav-tabs" id="navTabs"></div>
+    <div class="nav-right">
+      <div class="uchip" id="uchip"></div>
+      <button class="lout" onclick="doLogout()">Sign out</button>
+    </div>
+  </nav>
+  <div class="abody">
+
+    <div class="page" id="pgDash">
+      <div class="phd"><div><div class="ptitle">Dashboard</div><div class="psub">Workforce overview</div></div><div id="dashAct"></div></div>
+      <div class="srow" id="srow"></div>
+      <div class="dgrid">
+        <div class="dc"><div class="dct">BU Distribution</div><div id="buChart"></div></div>
+        <div class="dc"><div class="dct">Alerts</div><div id="alerts"></div></div>
+      </div>
+      <div class="dgrid">
+        <div class="dc"><div class="dct">Project Status</div><div id="stChart"></div></div>
+        <div class="dc"><div class="dct">Connects Due This Week</div><div id="conDue"></div></div>
+      </div>
+    </div>
+
+    <div class="page" id="pgEmp">
+      <div class="phd"><div><div class="ptitle" id="empTitle">Employees</div><div class="psub">All employee records</div></div><div id="empAct"></div></div>
+      <div class="tw">
+        <div class="tbar">
+          <input class="srch" id="eSearch" placeholder="Search name, ID, BU, skill..." oninput="renderET()">
+          <select class="fsel" id="fBU" onchange="renderET()"><option value="">All BUs</option></select>
+          <select class="fsel" id="fSt" onchange="renderET()">
+            <option value="">All Status</option><option value="green">🟢 Assigned</option>
+            <option value="amber">🟡 Waiting</option><option value="red">🔴 No Project</option>
+          </select>
+          <select class="fsel" id="fTen" onchange="renderET()">
+            <option value="">All Tenure</option><option value="new">New (&lt;3m)</option>
+            <option value="mid">Mid (3-12m)</option><option value="sr">Senior (1y+)</option>
+          </select>
+        </div>
+        <div id="etbl"></div>
+      </div>
+    </div>
+
+    <div class="page" id="pgCon">
+      <div class="phd"><div><div class="ptitle">HR Connects</div><div class="psub">Post-joining · 30/60/90 day · Regular</div></div>
+        <button class="btn b-green" onclick="openCM()">+ Log Connect</button></div>
+      <div class="srow" id="cSrow"></div>
+      <div class="tw">
+        <div class="tbar">
+          <input class="srch" id="cSearch" placeholder="Search employee..." oninput="renderCT()">
+          <select class="fsel" id="fCT" onchange="renderCT()">
+            <option value="">All Types</option><option value="post-joining">Post Joining</option>
+            <option value="30-day">30 Day</option><option value="60-day">60 Day</option>
+            <option value="90-day">90 Day</option><option value="regular">Regular</option>
+          </select>
+          <select class="fsel" id="fCS" onchange="renderCT()">
+            <option value="">All Status</option><option value="done">Completed</option>
+            <option value="pending">Pending</option><option value="overdue">Overdue</option>
+          </select>
+        </div>
+        <div id="ctbl"></div>
+      </div>
+    </div>
+
+    <div class="page" id="pgSkills">
+      <div class="phd"><div><div class="ptitle">Skill Mapping</div><div class="psub">BU-wise from base file</div></div>
+        <input class="srch" id="skillSearch" placeholder="Search skill, function, leader..." oninput="renderSkillTabContent(this.value.toLowerCase())" style="min-width:240px"></div>
+      <div id="skillContent"></div>
+    </div>
+
+    <!-- ══ PEOPLE VIEW ══ -->
+    <div class="page" id="pgPeople">
+      <div class="phd">
+        <div><div class="ptitle">People View</div><div class="psub">Skill cards, project occupancy & department overview</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select class="fsel" id="pvBU" onchange="renderPeople()"><option value="">All BUs</option></select>
+          <select class="fsel" id="pvSt" onchange="renderPeople()"><option value="">All Status</option><option value="green">🟢 Assigned</option><option value="amber">🟡 Waiting</option><option value="red">🔴 No Project</option></select>
+          <input class="srch" id="pvQ" placeholder="Search name or skill..." oninput="renderPeople()" style="min-width:200px">
+        </div>
+      </div>
+      <!-- BU summary strip -->
+      <div id="pvBuStrip" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem"></div>
+      <!-- Occupancy bar -->
+      <div class="dc" style="margin-bottom:1.5rem;padding:1rem 1.25rem">
+        <div class="dct" style="margin-bottom:.85rem">Project Occupancy</div>
+        <div id="pvOccBar"></div>
+      </div>
+      <!-- Cards grid -->
+      <div id="pvCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px"></div>
+    </div>
+
+    <div class="page" id="pgUpload">
+      <div class="phd"><div><div class="ptitle">Bulk Upload</div><div class="psub">Import employees from Excel or CSV</div></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="dc">
+          <div class="dct">Upload File</div>
+          <div class="upz" id="upz" onclick="document.getElementById('bFile').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+            <div style="font-size:2rem;margin-bottom:8px">📂</div>
+            <div style="font-size:13px;color:var(--text2);font-weight:600">Click to browse or drag & drop</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px">.xlsx · .xls · .csv</div>
+          </div>
+          <input type="file" id="bFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleBF(event)">
+          <div id="upPrev"></div>
+          <button class="btn b-amber" id="impBtn" style="display:none;width:100%;justify-content:center" onclick="doBulk()">⬆ Import All</button>
+        </div>
+        <div class="dc">
+          <div class="dct">Expected Columns</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:1rem;line-height:1.6">Columns are matched flexibly — partial names work.</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px">
+            ${['Employee ID','Full Name','BU','Function','Domain','Manager','Date of Joining','Primary Skills','Secondary Skills','Project','Project Status','Skill Level','Experience Years','Location','Grade','Designation'].map(c=>`<span style="font-size:10.5px;padding:2px 8px;background:var(--card);border:1px solid var(--border2);border-radius:4px;color:var(--text2);font-family:'JetBrains Mono',monospace">${c}</span>`).join('')}
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:1rem;line-height:1.8">
+            <span style="color:var(--green)">●</span> Status: Green / Amber / Red<br>
+            <span style="color:var(--amber)">●</span> Skills: comma-separated<br>
+            <span style="color:var(--blue)">●</span> Date: YYYY-MM-DD or DD/MM/YYYY
+          </div>
+        </div>
+      </div>
+      <div id="impLog" style="margin-top:14px"></div>
+    </div>
+
+    <div class="page" id="pgSettings">
+      <div class="phd"><div><div class="ptitle">Settings</div><div class="psub">Credentials & database</div></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="dc"><div class="dct">Login Credentials</div><div id="credList"></div></div>
+        <div class="dc"><div class="dct">Database</div><div id="dbInfo"></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ EMPLOYEE MODAL ══ -->
+<div class="mo" id="moEmp">
+  <div class="modal">
+    <div class="mhd"><div class="mtitle" id="moET">Add Employee</div><button class="mclose" onclick="closeMo('moEmp')">✕</button></div>
+    <div class="mbody">
+      <div class="fsec"><span>01</span>Identity</div>
+      <div class="fg2">
+        <div class="fg"><label>Employee ID *</label><input class="fi" id="fId" placeholder="EMP-001"></div>
+        <div class="fg"><label>Full Name *</label><input class="fi" id="fNm" placeholder="Full name"></div>
+        <div class="fg"><label>Email</label><input class="fi" id="fEm" type="email" placeholder="email@co.com"></div>
+        <div class="fg"><label>Phone</label><input class="fi" id="fPh" placeholder="+91 xxxxx xxxxx"></div>
+        <div class="fg"><label>Date of Joining *</label><input class="fi" id="fDj" type="date"></div>
+        <div class="fg"><label>Location</label><input class="fi" id="fLo" placeholder="City, Country"></div>
+      </div>
+      <div class="fsec"><span>02</span>Organisation</div>
+      <div class="fg2">
+        <div class="fg"><label>BU *</label><select class="fi" id="fBUm" onchange="updFnDrop()"><option value="">Select BU</option><option>SE</option><option>SDSI</option><option>SVT</option><option>NRM</option><option>R&D</option><option>Testing</option><option>IT</option></select></div>
+        <div class="fg"><label>Function *</label><select class="fi" id="fFn"><option value="">Select BU first</option></select></div>
+        <div class="fg"><label>Domain</label><input class="fi" id="fDo" placeholder="e.g. BSS, OSS"></div>
+        <div class="fg"><label>Reporting Manager</label><input class="fi" id="fMg" placeholder="Manager name"></div>
+        <div class="fg"><label>Designation</label><input class="fi" id="fDe" placeholder="e.g. Senior Engineer"></div>
+        <div class="fg"><label>Grade / Level</label><input class="fi" id="fGr" placeholder="e.g. L3, L4"></div>
+      </div>
+      <div class="fsec"><span>03</span>Skills</div>
+      <div class="fg2">
+        <div class="fg ff"><label>Primary Skills (comma separated)</label><input class="fi" id="fS1" placeholder="Java, Spring Boot, Docker"></div>
+        <div class="fg ff"><label>Secondary Skills</label><input class="fi" id="fS2" placeholder="Python, Ansible"></div>
+        <div class="fg"><label>Skill Level</label><select class="fi" id="fSL"><option>Beginner</option><option>Intermediate</option><option selected>Senior</option><option>Expert</option></select></div>
+        <div class="fg"><label>Years of Experience</label><input class="fi" id="fEx" type="number" min="0" placeholder="5"></div>
+      </div>
+      <div class="fsec"><span>04</span>Project</div>
+      <div class="fg2">
+        <div class="fg"><label>Current Project</label><input class="fi" id="fPr" placeholder="Project name or TBD"></div>
+        <div class="fg"><label>Project Status *</label><select class="fi" id="fPS"><option value="green">🟢 Green — Assigned</option><option value="amber" selected>🟡 Amber — Waiting</option><option value="red">🔴 Red — No Project</option></select></div>
+        <div class="fg"><label>Project Start</label><input class="fi" id="fP1" type="date"></div>
+        <div class="fg"><label>Expected Release</label><input class="fi" id="fP2" type="date"></div>
+        <div class="fg ff"><label>Notes</label><textarea class="fi" id="fNt" rows="2" placeholder="Additional notes..."></textarea></div>
+      </div>
+    </div>
+    <div class="mft"><button class="btn b-ghost" onclick="closeMo('moEmp')">Cancel</button><button class="btn b-blue" onclick="saveEmp()">Save Employee</button></div>
+  </div>
+</div>
+
+<!-- ══ CONNECT MODAL ══ -->
+<div class="mo" id="moCon">
+  <div class="modal" style="max-width:500px">
+    <div class="mhd"><div class="mtitle">Log HR Connect</div><button class="mclose" onclick="closeMo('moCon')">✕</button></div>
+    <div class="mbody">
+      <div class="fg"><label>Employee *</label><select class="fi" id="cEmp"><option value="">Select employee</option></select></div>
+      <div class="fg2">
+        <div class="fg"><label>Connect Type *</label><select class="fi" id="cTy"><option value="post-joining">Post Joining</option><option value="30-day">30 Day</option><option value="60-day">60 Day</option><option value="90-day">90 Day</option><option value="regular">Regular</option></select></div>
+        <div class="fg"><label>Date *</label><input class="fi" id="cDt" type="date"></div>
+        <div class="fg"><label>Status</label><select class="fi" id="cSt2"><option value="done">Completed</option><option value="pending">Pending</option><option value="overdue">Overdue</option></select></div>
+        <div class="fg"><label>HR BP Name</label><input class="fi" id="cHR" placeholder="HR name"></div>
+        <div class="fg ff"><label>Notes / Summary</label><textarea class="fi" id="cNo" rows="3" placeholder="Key points, action items..."></textarea></div>
+        <div class="fg"><label>Next Connect Date</label><input class="fi" id="cNx" type="date"></div>
+        <div class="fg"><label>Follow-up Action</label><input class="fi" id="cAc" placeholder="e.g. Share feedback form"></div>
+      </div>
+    </div>
+    <div class="mft"><button class="btn b-ghost" onclick="closeMo('moCon')">Cancel</button><button class="btn b-green" onclick="saveCon()">Save Connect</button></div>
+  </div>
+</div>
+
+<!-- ══ VIEW MODAL ══ -->
+<div class="mo" id="moView">
+  <div class="modal" style="max-width:740px">
+    <div class="mhd"><div class="mtitle">Employee Profile</div><button class="mclose" onclick="closeMo('moView')">✕</button></div>
+    <div class="mbody" id="moViewBody"></div>
+  </div>
+</div>
+
+<!-- DRILL DOWN MODAL -->
+<div class="mo" id="moDrill">
+  <div class="modal" style="max-width:820px">
+    <div class="mhd"><div class="mtitle" id="drillTitle">Employees</div><button class="mclose" onclick="closeMo('moDrill')">✕</button></div>
+    <div class="mbody" id="drillBody" style="padding:0;max-height:70vh;overflow-y:auto"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══ SUPABASE CONFIG ══ */
+const SB_URL='https://zwxlqergspcuvdmpwqbt.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3eGxxZXJnc3BjdXZkbXB3cWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1NDMzNTksImV4cCI6MjA2MjExOTM1OX0.Ljm8GqPJ5cqBCMz5fgjPqoJYgL3HpBt_i6JJM39rEMc';
+
+const SCHEMA_SQL=`CREATE TABLE IF NOT EXISTS employees (
+  id TEXT PRIMARY KEY, emp_id TEXT, name TEXT, email TEXT, phone TEXT,
+  doj TEXT, location TEXT, bu TEXT, function_name TEXT, domain TEXT,
+  manager TEXT, designation TEXT, grade TEXT, skills TEXT, skills2 TEXT,
+  skill_level TEXT, exp_years INT DEFAULT 0, project TEXT,
+  status TEXT DEFAULT 'amber', proj_start TEXT, proj_end TEXT, notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS connects (
+  id TEXT PRIMARY KEY, emp_id TEXT, emp_name TEXT, type TEXT,
+  connect_date TEXT, status TEXT DEFAULT 'pending', hr_name TEXT,
+  notes TEXT, next_date TEXT, action TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
+ALTER TABLE connects ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "allow_all_emp" ON employees;
+DROP POLICY IF EXISTS "allow_all_con" ON connects;
+CREATE POLICY "allow_all_emp" ON employees FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_con" ON connects FOR ALL USING (true) WITH CHECK (true);`;
+
+/* ══ SUPABASE REST (no library needed) ══ */
+async function sbq(method, table, params='', body=null){
+  const h={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
+  if(method==='POST'||method==='PATCH') h['Prefer']='return=representation';
+  const r=await fetch(SB_URL+'/rest/v1/'+table+(params?'?'+params:''),{method,headers:h,body:body?JSON.stringify(body):null});
+  const t=await r.text(); const d=t?JSON.parse(t):[];
+  if(!r.ok) throw new Error(d.message||d.hint||('HTTP '+r.status));
+  return d;
+}
+
+/* ══ BU / SKILL DATA ══ */
+const BU_FNS={SE:['UI/UX SE','OE','CRM','Cloud BSS','INT/TBAPI','OPF','Product Catalog','Billing & Revenue Mgt','Migration','Core Platform','DevOps','Cloud OSS','Resource Inventory','DMP-Core Platform','ERP','RM Java','OCS','Others - Dot Net'],SDSI:['Environment Admin (EA)','Cloud Support','DevOps','Monitoring Automation','DBA Team'],SVT:['Tools','Programming & Scripting','Monitor & Data Analysis','Performance Testing'],NRM:['Custom Integration','Migration','Mediation','Configuration','Rating & Billing'],'R&D':['RBM R&D','RBM ICE L3','Blueprint E2E','OCS ICE L3'],Testing:['Functional (Manual)','Automation'],IT:['Cloud Support & Dev','CI/VCS Support','IT Application Mgmt','IT Cyber Resilience','IT Helpdesk','IT Infra (SAN Storage)','IT Infra PM','IT Portal Solutions','Monitoring Group','Linux & Unix OS','Network Dev & Support']};
+const BU_COLORS={SE:'#4a8fc1',SDSI:'#27ae60',SVT:'#8e44ad',NRM:'#f5a623','R&D':'#e63950',Testing:'#16a085',IT:'#8fa3b1'};
+const SKILL_DATA={SE:{'UI/UX SE':{leader:'Sunitha Kanapala',lang:'Angular2+, ReactJs, JavaScript, TypeScript, HTML, CSS, Redux, React Native, ES6+, GraphQL',db:'MongoDB, PostgreSQL, MySQL',cloud:'AWS/Azure/GCP',other:'Jenkins, Maven, SonarQube'},'OE':{leader:'Bhagrav',lang:'Java, Spring, RESTful Webservices',db:'PL/SQL',cloud:'',other:''},'CRM':{leader:'Venkata J',lang:'Java, Spring, Springboot, Microservices',db:'PL/SQL',cloud:'AWS/Azure/GCP',other:'Design Patterns, CI/CD, CRM Domain'},'Cloud BSS':{leader:'Palanisamy Vishnu',lang:'Core Java/J2EE, Spring/Spring Boot/REST, Microservices, Docker, Kubernetes',db:'SQL, Oracle, PostgreSQL',cloud:'AWS/Azure/GCP',other:'Cassandra, Kafka, NOSQL'},'INT/TBAPI':{leader:'Dhanashri Kate / Alexander Shcherbakov',lang:'Java, Webservices, Microservices, Spring',db:'Oracle, MySQL',cloud:'AWS/Azure/GCP',other:'API, CI/CD, Kafka, RabbitMQ, Docker'},'OPF':{leader:'Ihar Dubkou',lang:'Java 7/8, J2EE, EJB, Servlets, JSP, JDBC, Springboot, Spring MVC',db:'SQL, Oracle, PostgreSQL',cloud:'',other:'SOAP/REST, Microservice Dev'},'Product Catalog':{leader:'—',lang:'PL/SQL, Java, Data Migration',db:'MySQL, PostgreSQL, Oracle',cloud:'AWS/Azure/GCP',other:'Telecom exp (must)'},'Billing & Revenue Mgt':{leader:'—',lang:'C++',db:'MongoDB, PostgreSQL, MySQL, Oracle',cloud:'',other:'Unix Shell, Perl, PL/SQL Scripting'},'Migration':{leader:'Nitesh Hatwar',lang:'PL/SQL, Procedures, Functions, Triggers',db:'Oracle, Performance Tuning',cloud:'',other:'BSS/OSS Migration'},'Core Platform':{leader:'Alexander Bobrov / Denis Melnikov',lang:'Java, Spring Security, Microservice, Kafka, Docker, Kubernetes',db:'MongoDB, PostgreSQL, MySQL',cloud:'AWS/Azure/GCP',other:'Golang'},'DevOps':{leader:'Bijoyendra Ratan Kundu',lang:'Jenkins, Github, Gitlab, Maven, Docker, Kubernetes',db:'MongoDB, PostgreSQL, MySQL',cloud:'AWS/Azure/GCP',other:'Prometheus, Grafana'},'Cloud OSS':{leader:'Sergii Kutovoi',lang:'Core Java, Spring Boot, Microservice, Docker, Kubernetes',db:'MongoDB, PostgreSQL, MySQL',cloud:'AWS/Azure/GCP',other:'Golang'}},SDSI:{'Environment Admin (EA)':{leader:'Hanu Pullammagari / Manu Mishra',lang:'Weblogic, WebSphere, Shell Scripting, Linux/Unix',db:'Oracle DB, SQL',cloud:'AWS, Azure, GCP, Oracle Cloud',other:'JBoss, Cloud CI/CD'},'Cloud Support':{leader:'Danmal Jain',lang:'Kubernetes, Docker, Jenkins, Ansible, Linux',db:'SQL, PostgreSQL, Cassandra',cloud:'AWS, Azure, GCP, Oracle Cloud',other:'Grafana, Prometheus, ELK'},'DevOps':{leader:'—',lang:'Ansible, Linux, Kubernetes, Docker',db:'SQL, PostgreSQL, Cassandra',cloud:'AWS, Azure, GCP',other:'Weblogic, JBoss, Tomcat'},'Monitoring Automation':{leader:'Gaurav Y Sharma',lang:'Python, Golang, Ansible, Linux, Docker, Kubernetes',db:'Oracle, PostgreSQL, NoSQL',cloud:'AWS, Azure, GCP',other:'Icinga, Prometheus, Zabbix, Nagios'},'DBA Team':{leader:'Shailesh Satish Bhimgare',lang:'Oracle DBA, Linux/UNIX, Shell Scripting, Ansible',db:'Oracle DB, Cassandra, PostgreSQL',cloud:'AWS, Azure, GCP, Oracle Cloud',other:'CICD, CouchBase, Amazon Aurora'}},SVT:{'Tools':{leader:'—',lang:'Apache, JMeter, Load Runner',db:'Oracle, PostgreSQL, Cassandra',cloud:'Kubernetes & Docker',other:''},'Programming & Scripting':{leader:'Pradip Awhad / Omkar Kulkarni',lang:'Python, Java, Shell Scripting',db:'',cloud:'AWS/GCP/Azure',other:''},'Monitor & Data Analysis':{leader:'Manish Chandra / Deepak Kumar Patel',lang:'Grafana',db:'',cloud:'',other:''},'Performance Testing':{leader:'Naganna Danduboyana',lang:'Performance Testing expertise',db:'',cloud:'',other:''}},NRM:{'Custom Integration':{leader:'Bandi Srinivas Rao / Vijay Ashok Gurav',lang:'C++, PL/SQL, Telecom BSS',db:'PL/SQL, PostgreSQL',cloud:'',other:'Java'},'Migration':{leader:'Sanjeev Sharma / Ashish Deb',lang:'PL/SQL, BSS Migration, Scripting',db:'Oracle/PostgreSQL',cloud:'',other:''},'Mediation':{leader:'Satyajit Mohanthy / Ashish Deb',lang:'Java, Telecom BSS',db:'PL/SQL, PostgreSQL',cloud:'',other:''},'Configuration':{leader:'Phani Suman / Ashish Deb',lang:'PL/SQL, BSS Configuration',db:'PL/SQL, PostgreSQL',cloud:'',other:''},'Rating & Billing':{leader:'—',lang:'PL/SQL, C, C++',db:'',cloud:'',other:''}},'R&D':{'RBM R&D':{leader:'Viswanath Nandanavanam / Ravi Kiran',lang:'C, C++, Scripting, Algorithms',db:'Any DB',cloud:'',other:'Telecom BSS'},'RBM ICE L3':{leader:'Rao Venkata / Aezaz Mohammad',lang:'Java, Core Java, J2EE, Spring Boot, C, C++',db:'Oracle/PL/SQL',cloud:'',other:''},'Blueprint E2E':{leader:'Pushpakraj Mehta',lang:'BA Roles — Telecom BSS & OSS',db:'',cloud:'',other:''},'OCS ICE L3':{leader:'Rao Venkata / Venkat Ramana',lang:'Java, Core Java, J2EE, Spring Boot',db:'Oracle/PL/SQL',cloud:'',other:''}},Testing:{'Functional (Manual)':{leader:'Kshitij Vinod Sutawane',lang:'Manual Testing, Telecom BSS',db:'PL/SQL',cloud:'UNIX',other:'Test Case Design, Execution'},'Automation':{leader:'Alexander Shirobokov',lang:'Java, Selenium, Cucumber BDD, TestNG, Playwright, API Testing',db:'',cloud:'',other:'Test Automation, QA Methodology'}},IT:{'Cloud Support & Dev':{leader:'Sunny Biswas / Prasanna Ramesh',lang:'Shell/Bash, OpenStack Admin, Linux',db:'Basic',cloud:'OpenStack, AWS',other:'Ansible, Docker'},'CI/VCS Support':{leader:'Purusothaman Raghu',lang:'Shell, Python, Java',db:'',cloud:'HyperV',other:'Jenkins, GitLab, GIT, Linux Admin'},'IT Application Mgmt':{leader:'Gangasani BalaKrishna Reddy',lang:'Java, Groovy, React, Spring',db:'MySQL',cloud:'AWS',other:'Linux, Automations'},'IT Cyber Resilience':{leader:'Arwin Prakash Fernandis / Suvajit',lang:'Vulnerability Mgmt, SIEM, DLP, EDR, WAF',db:'',cloud:'AWS, Azure, Cloud Security',other:'Elastic, Kibana, Nessus'},'IT Helpdesk':{leader:'Neelesh Sachania',lang:'',db:'',cloud:'',other:'Desktop L1/L2, JIRA, ServiceNow, Active Directory'},'IT Infra PM':{leader:'Ajay Kumar N / Sri / Yuri',lang:'Terraform, Ansible, Chef, SQL, Python',db:'PostgreSQL, Oracle',cloud:'AWS, GCP, Azure',other:'Networking, Linux, Security'},'IT Portal Solutions':{leader:'Vikas Jain / Gangasani Bala',lang:'Java, Groovy, React, Spring',db:'MySQL',cloud:'AWS',other:'JIRA, Confluence, GitHub, Atlassian'},'Monitoring Group':{leader:'Randeep P R',lang:'Python, GoLang, Bash',db:'ClickHouse, MariaDB, PostgreSQL, MongoDB',cloud:'AWS, Azure',other:'Grafana, Graylog, Elasticsearch, Prometheus, Docker'},'Linux & Unix OS':{leader:'Aljo Antony',lang:'Shell, Python, Bash',db:'MySQL, PostgreSQL',cloud:'OpenStack',other:'LVM, RAID, Kernel Tuning, JIRA'},'Network Dev & Support':{leader:'Srivathsa V',lang:'Shell, Python',db:'',cloud:'OpenStack, AWS, Azure',other:'Linux, VMware, Grafana, Routing, Switching'}}};
+
+/* ══ STATE ══ */
+let employees=[],connects=[],USE_SB=false,editEmpId=null,pendingImport=[],curRole='master',curUser='';
+const CREDS={master:{u:'master',p:'master123',label:'Master Admin'},hr:{u:'hr',p:'hr123',label:'HR Manager'},manager:{u:'manager',p:'mgr123',label:'Team Manager'}};
+let selectedRole='master';
+
+/* ══ DB INIT — fires in background after page loads ══ */
+async function initDB(){
+  setDBDot('loading','Connecting to database...');
+  try{
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),4000);
+    const r=await fetch(SB_URL+'/rest/v1/employees?limit=1',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},signal:controller.signal});
+    clearTimeout(timeout);
+    if(r.status===200||r.status===206){
+      USE_SB=true; setDBDot('ok','Supabase connected ✓');
+    } else if(r.status===404||r.status===400){
+      const t=await r.text();
+      if(t.includes('does not exist')||t.includes('relation')||t.includes('42P01')){
+        USE_SB=true; setDBDot('ok','Supabase connected ✓');
+        setTimeout(showSqlModal,500);
+      } else { throw new Error('HTTP '+r.status); }
+    } else { throw new Error('HTTP '+r.status); }
+  }catch(e){
+    USE_SB=false; setDBDot('err','Offline — local mode');
+  }
+}
+
+function setDBDot(state,msg){
+  const d=document.getElementById('dbDot'),t=document.getElementById('dbTxt');
+  if(d){d.className='db-dot'+(state==='ok'?' ok':state==='err'?' err':'');}
+  if(t) t.textContent=msg;
+}
+
+function showSqlModal(){
+  document.getElementById('sqlTa').value=SCHEMA_SQL;
+  document.getElementById('sqlMo').classList.add('open');
+}
+function copySql(){
+  document.getElementById('sqlTa').select();
+  document.execCommand('copy');
+  showToast('SQL copied! Paste in Supabase SQL Editor → Run','ok');
+}
+
+/* ══ AUTH ══ */
+function selRole(r,el){
+  selectedRole=r;
+  document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('roleLabel').textContent={master:'Master — Username',hr:'HR — Username',manager:'Manager — Username'}[r];
+  // Clear fields and auto-fill credentials for selected role
+  const c=CREDS[r];
+  document.getElementById('lu').value=c.u;
+  document.getElementById('lp').value=c.p;
+  document.getElementById('lerr').style.display='none';
+}
+
+function doLogin(){
+  const u=document.getElementById('lu').value.trim();
+  const p=document.getElementById('lp').value.trim();
+  const c=CREDS[selectedRole];
+  document.getElementById('lerr').style.display='none';
+  if(u===c.u&&p===c.p){
+    curRole=selectedRole; curUser=c.label;
+    document.getElementById('loginWrap').style.display='none';
+    document.getElementById('app').style.display='flex';
+    buildNav(); showPage('pgDash');
+    loadData().then(()=>{ renderDash(); renderET(); });
+  } else {
+    document.getElementById('lerr').style.display='block';
+  }
+}
+
+function doLogout(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('loginWrap').style.display='flex';
+  document.getElementById('lu').value='';
+  document.getElementById('lp').value='';
+}
+
+/* ══ DATA ══ */
+async function loadData(){
+  if(!USE_SB){ loadLocal(); return; }
+  try{
+    const [e,c]=await Promise.all([
+      sbq('GET','employees','order=created_at.desc'),
+      sbq('GET','connects','order=created_at.desc'),
+    ]);
+    employees=e||[]; connects=c||[];
+    saveLocal();
+  }catch(err){
+    loadLocal();
+    if(!employees.length) seedDemo();
+  }
+}
+
+async function saveEmpDB(emp){
+  if(!USE_SB){ upsertL('emp',emp); return; }
+  try{
+    const exists=employees.find(e=>e.id===emp.id);
+    if(exists) await sbq('PATCH','employees','id=eq.'+encodeURIComponent(emp.id),emp);
+    else await sbq('POST','employees','',emp);
+    await loadData();
+  }catch(e){ upsertL('emp',emp); showToast('Saved locally (DB: '+e.message+')','err'); }
+}
+
+async function delEmpDB(id){
+  if(!USE_SB){ employees=employees.filter(e=>e.id!==id); connects=connects.filter(c=>c.emp_id!==id); saveLocal(); return; }
+  try{
+    await sbq('DELETE','employees','id=eq.'+encodeURIComponent(id));
+    await sbq('DELETE','connects','emp_id=eq.'+encodeURIComponent(id));
+    await loadData();
+  }catch(e){ employees=employees.filter(e=>e.id!==id); connects=connects.filter(c=>c.emp_id!==id); saveLocal(); }
+}
+
+async function saveConDB(con){
+  if(!USE_SB){ upsertL('con',con); return; }
+  try{
+    const exists=connects.find(c=>c.id===con.id);
+    if(exists) await sbq('PATCH','connects','id=eq.'+encodeURIComponent(con.id),con);
+    else await sbq('POST','connects','',con);
+    await loadData();
+  }catch(e){ upsertL('con',con); }
+}
+
+async function delConDB(id){
+  if(!USE_SB){ connects=connects.filter(c=>c.id!==id); saveLocal(); return; }
+  try{ await sbq('DELETE','connects','id=eq.'+encodeURIComponent(id)); await loadData(); }
+  catch(e){ connects=connects.filter(c=>c.id!==id); saveLocal(); }
+}
+
+function upsertL(t,o){
+  if(t==='emp'){const i=employees.findIndex(e=>e.id===o.id);if(i>=0)employees[i]=o;else employees.unshift(o);}
+  else{const i=connects.findIndex(c=>c.id===o.id);if(i>=0)connects[i]=o;else connects.unshift(o);}
+  saveLocal();
+}
+function saveLocal(){try{localStorage.setItem('wiq_e',JSON.stringify(employees));localStorage.setItem('wiq_c',JSON.stringify(connects));}catch(e){}}
+function loadLocal(){try{employees=JSON.parse(localStorage.getItem('wiq_e')||'[]');}catch{employees=[];}try{connects=JSON.parse(localStorage.getItem('wiq_c')||'[]');}catch{connects=[];}if(!employees.length)seedDemo();}
+
+function E(id,name,email,phone,doj,bu,fn,domain,mgr,desig,grade,sk1,sk2,slv,exp,proj,st,ps,pe,loc,notes){
+  return {id,emp_id:id,name,email,phone,doj,bu,function_name:fn,domain,manager:mgr,designation:desig,grade,skills:sk1,skills2:sk2,skill_level:slv,exp_years:exp,project:proj,status:st,proj_start:ps,proj_end:pe,location:loc,notes,created_at:'2025-01-01T00:00:00Z'};
+}
+function seedDemo(){
+  employees=[
+  /* ─── SE ─── */
+  E('SE-001','Arjun Sharma','arjun.s@co.com','+91 98001 10001','2022-03-15','SE','Core Platform','BSS','Alexander Bobrov','Senior Engineer','L4','Java,Spring Security,Kafka,Docker,Kubernetes','Golang,OOPS','Senior',6,'Nu Day BSS Platform','green','2024-01-01','2025-06-30','Bangalore','Key contributor on cloud platform'),
+  E('SE-002','Priya Nair','priya.n@co.com','+91 98001 10002','2024-01-10','SE','UI/UX SE','Frontend','Sunitha Kanapala','Engineer','L3','ReactJs,TypeScript,JavaScript,HTML,CSS','Redux,GraphQL,Angular2+','Intermediate',3,'Portal Redesign','green','2024-04-01','2024-12-31','Hyderabad','Strong frontend skills'),
+  E('SE-003','Rajan Iyer','rajan.i@co.com','+91 98001 10003','2021-05-12','SE','INT/TBAPI','Integration','Dhanashri Kate','Senior Engineer','L4','Java,Webservices,Spring,Kafka','API,RabbitMQ,Microservices','Senior',7,'O2UK BSS Integration','green','2023-06-01','2025-06-30','Pune','Integration expert'),
+  E('SE-004','Meena Subramaniam','meena.s@co.com','+91 98001 10004','2023-02-20','SE','CRM','CRM','Venkata J','Engineer','L3','Java,Spring,Springboot,Microservices','PL/SQL,REST,CI/CD','Intermediate',4,'Singtel CRM','green','2023-09-01','2025-03-31','Chennai','Good at CRM domain'),
+  E('SE-005','Vikram Pillai','vikram.p@co.com','+91 98001 10005','2019-08-01','SE','Cloud BSS','BSS','Palanisamy Vishnu','Lead Engineer','L5','Core Java,Spring Boot,Docker,Kubernetes,Jenkins','Cassandra,Kafka,NOSQL','Expert',9,'Etisalat Cloud BSS','green','2023-01-01','2025-12-31','Bangalore','Technical lead for Cloud BSS'),
+  E('SE-006','Deepa Krishnan','deepa.k@co.com','+91 98001 10006','2024-03-10','SE','OPF','OSS','Ihar Dubkou','Engineer','L3','Java 7/8,J2EE,Servlets,Springboot,Spring MVC','EJB,JSP,JDBC','Intermediate',2,'','amber','','','Mumbai','Bench — looking for assignment'),
+  E('SE-007','Suresh Babu','suresh.b@co.com','+91 98001 10007','2020-11-15','SE','DevOps','DevOps','Bijoyendra Ratan Kundu','Senior DevOps','L4','Jenkins,Docker,Kubernetes,Maven,Gitlab','Grafana,Prometheus,SonarQube','Senior',7,'Nu Day DevOps','green','2024-02-01','2025-12-31','Hyderabad','CI/CD expert'),
+  E('SE-008','Ananya Reddy','ananya.r@co.com','+91 98001 10008','2023-06-01','SE','Migration','OSS','Nitesh Hatwar','Engineer','L3','PL/SQL,Procedures,Triggers,Query Writing','Oracle,Performance Tuning','Intermediate',4,'Globe Migration','green','2024-03-01','2025-03-31','Bangalore','DB migration specialist'),
+  E('SE-009','Rahul Mehta','rahul.m@co.com','+91 98001 10009','2022-09-05','SE','Product Catalog','BSS','','Senior Engineer','L4','PL/SQL,Java,Data Migration','MySQL,PostgreSQL,Oracle','Senior',5,'Charter Product Catalog','green','2024-01-01','2025-06-30','Pune','Telecom exp — must skill covered'),
+  E('SE-010','Lavanya Kumar','lavanya.k@co.com','+91 98001 10010','2024-04-01','SE','Billing & Revenue Mgt','Billing','','Engineer','L3','C++,MongoDB,PostgreSQL','PL/SQL Scripting,Unix Shell,Perl','Intermediate',2,'','red','','','Chennai','No project. HR connect needed.'),
+  E('SE-011','Nitin Joshi','nitin.j@co.com','+91 98001 10011','2021-07-20','SE','Cloud OSS','OSS','Sergii Kutovoi','Senior Engineer','L4','Core Java,Spring Boot,Microservice,Docker,Kubernetes','MongoDB,PostgreSQL,Golang','Senior',6,'Odido Cloud OSS','green','2024-06-01','2025-12-31','Bangalore','Cloud OSS expert'),
+  E('SE-012','Sowmya Rajan','sowmya.r@co.com','+91 98001 10012','2023-11-10','SE','OE','Java','Bhagrav','Engineer','L3','Java,Spring,RESTful Webservices','PL/SQL','Intermediate',3,'','amber','','','Hyderabad','New — waiting for project'),
+  E('SE-013','Aditya Nair','aditya.n@co.com','+91 98001 10013','2020-03-25','SE','RM Java','Core Java','Mikhail Shishalov','Lead Engineer','L5','Core Java,Web Services,JMS,JDBC,Hibernate,Spring Boot','SQL,PostgreSQL,NoSQL,Kafka','Expert',8,'Rogers Canada AMS','green','2023-11-01','2025-11-30','Bangalore','Senior Java architect'),
+  /* ─── SDSI ─── */
+  E('SDSI-001','Danmal Jain','danmal.j@co.com','+91 98002 20001','2019-06-10','SDSI','Cloud Support','Cloud','Danmal Jain','Principal Engineer','L6','Kubernetes,Docker,Jenkins,OpenShift,Ansible,Bash','Grafana,Prometheus,PromQL,ELK,Cassandra','Expert',9,'Zain Cloud Support','green','2023-08-01','2025-08-31','Mumbai','Cloud support lead'),
+  E('SDSI-002','Gaurav Sharma','gaurav.s@co.com','+91 98002 20002','2020-09-01','SDSI','Monitoring Automation','Monitoring','Gaurav Y Sharma','Senior Engineer','L4','Python,Ansible,Linux,Docker,Kubernetes','Prometheus,Zabbix,Nagios,AppDynamics','Senior',7,'Globe Monitoring','green','2024-01-01','2025-06-30','Bangalore','Monitoring tools expert'),
+  E('SDSI-003','Hanu Reddy','hanu.r@co.com','+91 98002 20003','2021-02-14','SDSI','Environment Admin (EA)','Middleware','Hanu Pullammagari','DevOps Engineer','L4','Weblogic,WebSphere,Shell Scripting,Linux','Oracle DB,SQL,JBoss','Senior',6,'Telus EA Support','green','2023-07-01','2025-07-31','Hyderabad','Middleware admin specialist'),
+  E('SDSI-004','Shailesh Bhimgare','shailesh.b@co.com','+91 98002 20004','2018-05-20','SDSI','DBA Team','Database','Shailesh Satish Bhimgare','Principal DBA','L6','Oracle DBA,Shell Scripting,Ansible,Linux','Cassandra,PostgreSQL,CouchBase,Amazon Aurora','Expert',10,'Nu Day DBA','green','2023-01-01','2026-01-31','Pune','Senior Oracle DBA, cloud experience'),
+  E('SDSI-005','Pooja Shetty','pooja.s@co.com','+91 98002 20005','2024-02-15','SDSI','DevOps','DevOps','','Engineer','L3','Ansible,Linux,Docker,Kubernetes','Weblogic,JBoss,Tomcat,WildFly','Intermediate',2,'','amber','','','Mumbai','Newly joined — bench'),
+  /* ─── SVT ─── */
+  E('SVT-001','Naganna Danduboyana','naganna.d@co.com','+91 98003 30001','2019-11-01','SVT','Performance Testing','QA','Naganna Danduboyana','Performance Test Lead','L5','JMeter,Load Runner,Apache,Performance Testing','Kubernetes,Docker','Expert',8,'Etisalat Perf Testing','green','2024-03-01','2025-03-31','Hyderabad','Performance testing lead'),
+  E('SVT-002','Pradip Awhad','pradip.a@co.com','+91 98003 30002','2021-04-10','SVT','Programming & Scripting','Scripting','Pradip Awhad','Senior Engineer','L4','Python,Java,Shell Scripting','AWS,GCP,Azure','Senior',6,'O2UK Scripting','green','2024-01-01','2025-06-30','Pune','Python & automation expert'),
+  E('SVT-003','Manish Chandra','manish.c@co.com','+91 98003 30003','2022-07-01','SVT','Monitor & Data Analysis','Monitoring','Manish Chandra','Data Analyst','L3','Grafana,Data Analysis','','Intermediate',4,'Charter Monitoring','green','2024-04-01','2025-04-30','Bangalore','Grafana dashboards expert'),
+  E('SVT-004','Omkar Kulkarni','omkar.k@co.com','+91 98003 30004','2023-09-15','SVT','Tools','Testing Tools','','Engineer','L3','Apache,JMeter,Load Runner','Oracle,PostgreSQL,Cassandra','Intermediate',3,'','amber','','','Pune','Waiting for QA project'),
+  /* ─── NRM ─── */
+  E('NRM-001','Bandi Srinivas','bandi.s@co.com','+91 98004 40001','2018-03-01','NRM','Custom Integration','NRM','Bandi Srinivas Rao','Principal Engineer','L6','C++,PL/SQL,Telecom BSS','PostgreSQL,Java','Expert',10,'Globe NRM Integration','green','2023-06-01','2025-12-31','Hyderabad','NRM integration expert — 10yr exp'),
+  E('NRM-002','Sanjeev Sharma','sanjeev.s@co.com','+91 98004 40002','2019-08-10','NRM','Migration','NRM','Sanjeev Sharma','Lead Engineer','L5','PL/SQL,BSS Migration,Scripting','Oracle,PostgreSQL','Expert',8,'Altice NRM Migration','green','2024-01-01','2025-06-30','Chennai','BSS migration lead'),
+  E('NRM-003','Satyajit Mohanthy','satyajit.m@co.com','+91 98004 40003','2020-12-01','NRM','Mediation','NRM','Satyajit Mohanthy','Senior Engineer','L4','Java,Telecom BSS,Mediation','PL/SQL,PostgreSQL','Senior',7,'Singtel Mediation','green','2023-10-01','2025-10-31','Bangalore','Mediation & BSS expert'),
+  E('NRM-004','Phani Somayajula','phani.s@co.com','+91 98004 40004','2021-05-20','NRM','Configuration','NRM','Phani Suman Somayajula','Engineer','L4','PL/SQL,BSS Configuration','PL/SQL,PostgreSQL','Senior',6,'Odido Config','green','2024-02-01','2025-08-31','Hyderabad','BSS configuration specialist'),
+  E('NRM-005','Vijay Gurav','vijay.g@co.com','+91 98004 40005','2023-03-01','NRM','Rating & Billing','Billing','','Engineer','L3','PL/SQL,C,C++','','Intermediate',3,'','red','','','Chennai','No project — available'),
+  /* ─── R&D ─── */
+  E('RD-001','Viswanath Nandanavanam','viswanath.n@co.com','+91 98005 50001','2017-01-15','R&D','RBM R&D','R&D','Viswanath Nandanavanam','Principal Architect','L7','C,C++,Data Structures,Algorithms,Scripting','Telecom BSS Knowledge','Expert',11,'RBM R&D Innovation','green','2023-01-01','2026-01-01','Hyderabad','R&D lead — 11 yr exp'),
+  E('RD-002','Rao Venkata Rambhatla','rao.v@co.com','+91 98005 50002','2018-06-01','R&D','RBM ICE L3','R&D','Rao Venkata Subba Rambhatla','Senior Engineer','L5','Java,Core Java,J2EE,Spring Boot,C,C++,Pro C','Oracle,PL/SQL','Expert',9,'RBM ICE L3 Support','green','2023-07-01','2025-07-31','Bangalore','Core Java + C++ dual expert'),
+  E('RD-003','Mahesh Chatnale','mahesh.c@co.com','+91 98005 50003','2021-09-01','R&D','RBM R&D','R&D','Viswanath Nandanavanam','Engineer','L3','Angular,JavaScript,ES6,Data Structures','State Management','Intermediate',5,'RBM UI R&D','green','2024-01-01','2025-06-30','Pune','Frontend for R&D tools'),
+  E('RD-004','Hrishikesh Lonkar','hrishikesh.l@co.com','+91 98005 50004','2022-03-10','R&D','RBM R&D','R&D','','Senior Engineer','L4','Golang,Java,Diameter Protocol','','Senior',5,'Diameter R&D','green','2024-04-01','2025-12-31','Mumbai','Golang + Diameter specialist'),
+  E('RD-005','Pushpakraj Mehta','pushpakraj.m@co.com','+91 98005 50005','2020-07-01','R&D','Blueprint E2E','BSS/OSS','Pushpakraj Mehta','Lead BA','L5','Telecom BSS,OSS,BA Roles','Agile,Waterfall','Senior',7,'Google Fibre Blueprint','green','2024-02-01','2025-02-28','Hyderabad','Blueprint & E2E BA lead'),
+  /* ─── Testing ─── */
+  E('TST-001','Kshitij Sutawane','kshitij.s@co.com','+91 98006 60001','2019-04-01','Testing','Functional (Manual)','QA','Kshitij Vinod Sutawane','QA Lead','L5','Manual Testing,Telecom BSS,Test Case Design','PL/SQL,UNIX','Expert',8,'O2UK QA Lead','green','2023-10-01','2025-10-31','Bangalore','QA lead — manual testing'),
+  E('TST-002','Alexander Shirobokov','alex.s@co.com','+91 98006 60002','2020-10-10','Testing','Automation','QA','Alexander Shirobokov','Senior Automation Eng','L4','Java,Selenium,Cucumber BDD,TestNG,Playwright,API Testing','SQL,CI/CD','Senior',7,'Etisalat Test Automation','green','2024-03-01','2025-09-30','Hyderabad','Automation champion'),
+  E('TST-003','Preethi Rajan','preethi.r@co.com','+91 98006 60003','2024-04-01','Testing','Functional (Manual)','QA','Kshitij Vinod Sutawane','QA Engineer','L3','Manual Testing,Test Case Execution,Telecom BSS','PL/SQL','Beginner',1,'','amber','','','Chennai','New joiner — onboarding in progress'),
+  /* ─── IT ─── */
+  E('IT-001','Randeep PR','randeep.p@co.com','+91 98007 70001','2019-09-15','IT','Monitoring Group','IT','Randeep P R','Senior Engineer','L4','Python,GoLang,Bash,Ansible,Docker','ClickHouse,MariaDB,PostgreSQL,MongoDB,Grafana,Prometheus','Senior',8,'IT Monitoring Platform','green','2023-05-01','2025-05-31','Bangalore','Monitoring & observability expert'),
+  E('IT-002','Aljo Antony','aljo.a@co.com','+91 98007 70002','2020-06-01','IT','Linux & Unix OS','IT','Aljo Antony','Linux Admin','L4','Shell,Python,Bash,LVM,RAID,Kernel Tuning','MySQL,PostgreSQL,OpenStack','Senior',7,'Linux OS Support','green','2023-01-01','2025-12-31','Hyderabad','Linux expert'),
+  E('IT-003','Gangasani Reddy','gangasani.r@co.com','+91 98007 70003','2021-11-20','IT','IT Application Mgmt','IT','Gangasani BalaKrishna Reddy','App Dev Engineer','L3','Java,Groovy,React,Spring','MySQL,AWS,PostgreSQL','Intermediate',5,'IT Portal Dev','green','2024-06-01','2025-06-30','Mumbai','Java + React combo'),
+  E('IT-004','Arwin Fernandis','arwin.f@co.com','+91 98007 70004','2020-03-01','IT','IT Cyber Resilience','Security','Arwin Prakash Fernandis','Security Engineer','L4','Vulnerability Management,SIEM,DLP,EDR,WAF','Elastic,Kibana,Nessus,Orca','Senior',7,'IT Security Ops','green','2023-07-01','2025-07-31','Bangalore','Cyber security expert'),
+  E('IT-005','Srivathsa V','srivathsa.v@co.com','+91 98007 70005','2019-01-10','IT','Network Dev & Support','Networking','Srivathsa V','Network Lead','L5','Shell,Python,VMware,Grafana','OpenStack,AWS,Azure','Expert',9,'Network Infra Support','green','2022-06-01','2025-12-31','Hyderabad','Network & routing expert'),
+  E('IT-006','Neelesh Sachania','neelesh.s@co.com','+91 98007 70006','2022-08-01','IT','IT Helpdesk','IT','Neelesh Sachania','Helpdesk Lead','L3','JIRA,ServiceNow,Active Directory,Networking','','Intermediate',4,'IT Helpdesk L1/L2','green','2024-01-01','2025-12-31','Bangalore','Helpdesk operations lead'),
+  E('IT-007','Ajay Kumar N','ajay.k@co.com','+91 98007 70007','2018-04-15','IT','IT Infra PM','IT','Ajay Kumar N','Infra PM','L6','Terraform,Ansible,Chef,SQL,Python','PostgreSQL,Oracle,AWS','Expert',10,'Cloud Infra PM','green','2023-01-01','2025-12-31','Pune','Infra PM — 10yr exp'),
+  E('IT-008','Sunny Biswas','sunny.b@co.com','+91 98007 70008','2023-05-01','IT','Cloud Support & Dev','Cloud','Sunny Biswas','Cloud Engineer','L3','Shell/Bash,OpenStack Admin,Linux,Containerization','AWS,OpenStack,Docker','Intermediate',3,'','amber','','','Mumbai','Waiting for cloud project'),
+  ];
+  connects=[
+  {id:'CON-001',emp_id:'SE-010',emp_name:'Lavanya Kumar',type:'post-joining',connect_date:'2024-04-10',status:'done',hr_name:'Meena Pillai',notes:'Joined well. Needs project urgently.',next_date:'2024-05-10',action:'Find billing project',created_at:'2024-04-10T10:00:00Z'},
+  {id:'CON-002',emp_id:'SE-010',emp_name:'Lavanya Kumar',type:'30-day',connect_date:'2024-05-10',status:'done',hr_name:'Meena Pillai',notes:'Still no project. Candidate concerned about bench time.',next_date:'2024-06-10',action:'Escalate to BU head',created_at:'2024-05-10T10:00:00Z'},
+  {id:'CON-003',emp_id:'SE-010',emp_name:'Lavanya Kumar',type:'60-day',connect_date:'',status:'overdue',hr_name:'',notes:'',next_date:'2024-06-10',action:'Schedule immediately',created_at:'2024-05-11T10:00:00Z'},
+  {id:'CON-004',emp_id:'NRM-005',emp_name:'Vijay Gurav',type:'post-joining',connect_date:'2024-03-05',status:'done',hr_name:'Ravi HR',notes:'Good energy. Eager to get a project.',next_date:'2024-04-05',action:'Look for NRM project',created_at:'2024-03-05T10:00:00Z'},
+  {id:'CON-005',emp_id:'NRM-005',emp_name:'Vijay Gurav',type:'30-day',connect_date:'2024-04-05',status:'done',hr_name:'Ravi HR',notes:'No project yet. Studying PL/SQL topics.',next_date:'2024-05-05',action:'Connect with NRM BU head',created_at:'2024-04-05T10:00:00Z'},
+  {id:'CON-006',emp_id:'SE-006',emp_name:'Deepa Krishnan',type:'post-joining',connect_date:'2024-03-15',status:'done',hr_name:'Meena Pillai',notes:'Smooth joining. Familiar with Java ecosystem.',next_date:'2024-04-15',action:'Assign to OPF project',created_at:'2024-03-15T10:00:00Z'},
+  {id:'CON-007',emp_id:'TST-003',emp_name:'Preethi Rajan',type:'post-joining',connect_date:'2024-04-05',status:'done',hr_name:'Ravi HR',notes:'First job. Enthusiastic. Needs mentoring.',next_date:'2024-05-05',action:'Assign mentor from QA team',created_at:'2024-04-05T10:00:00Z'},
+  {id:'CON-008',emp_id:'SDSI-005',emp_name:'Pooja Shetty',type:'post-joining',connect_date:'2024-02-20',status:'done',hr_name:'Meena Pillai',notes:'Comfortable with Linux. Learning Kubernetes.',next_date:'2024-03-20',action:'Add to next cloud project',created_at:'2024-02-20T10:00:00Z'},
+  {id:'CON-009',emp_id:'IT-008',emp_name:'Sunny Biswas',type:'post-joining',connect_date:'2024-05-10',status:'done',hr_name:'Ravi HR',notes:'Ex-startup. Strong OpenStack background.',next_date:'2024-06-10',action:'Match with cloud infra team',created_at:'2024-05-10T10:00:00Z'},
+  {id:'CON-010',emp_id:'SE-012',emp_name:'Sowmya Rajan',type:'post-joining',connect_date:'2024-11-20',status:'done',hr_name:'Meena Pillai',notes:'Java background. Ready to take up OE work.',next_date:'2024-12-20',action:'Discuss OE project possibilities',created_at:'2024-11-20T10:00:00Z'},
+  ];
+  saveLocal();
+}
+
+/* ══ APP NAV ══ */
+const NAVS={master:[{id:'pgDash',l:'Dashboard'},{id:'pgEmp',l:'Employees'},{id:'pgCon',l:'HR Connects'},{id:'pgPeople',l:'People View'},{id:'pgSkills',l:'Skill Mapping'},{id:'pgUpload',l:'Bulk Upload'},{id:'pgSettings',l:'Settings'}],hr:[{id:'pgDash',l:'Dashboard'},{id:'pgEmp',l:'Employees'},{id:'pgCon',l:'HR Connects'},{id:'pgPeople',l:'People View'},{id:'pgSkills',l:'Skill Mapping'}],manager:[{id:'pgDash',l:'Dashboard'},{id:'pgEmp',l:'My Team'},{id:'pgPeople',l:'People View'},{id:'pgSkills',l:'Skill Mapping'}]};
+
+function buildNav(){
+  document.getElementById('navTabs').innerHTML=NAVS[curRole].map(n=>`<button class="ntab" id="nav_${n.id}" onclick="showPage('${n.id}')">${n.l}</button>`).join('');
+  document.getElementById('uchip').textContent=curUser+(USE_SB?' · Supabase':' · Local');
+}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  const pg=document.getElementById(id); if(pg)pg.classList.add('active');
+  const tb=document.getElementById('nav_'+id); if(tb)tb.classList.add('active');
+  if(id==='pgDash') renderDash();
+  else if(id==='pgEmp') renderEmpPage();
+  else if(id==='pgCon') renderConPage();
+  else if(id==='pgSkills') renderSkills();
+  else if(id==='pgPeople') renderPeople();
+  else if(id==='pgSettings') renderSettings();
+}
+
+/* ══ HELPERS ══ */
+function tenMo(doj){if(!doj)return 0;return Math.floor((new Date()-new Date(doj))/(1000*60*60*24*30.44))}
+function tenStr(doj){const m=tenMo(doj);if(!m)return '—';if(m<1)return 'New';if(m<12)return m+'m';const y=Math.floor(m/12),r=m%12;return y+'y'+(r?' '+r+'m':'');}
+function stBadge(s){const m={green:'bg',amber:'ba',red:'br'};const l={green:'Assigned',amber:'Waiting',red:'No Project'};return`<span class="badge ${m[s]||'bb'}">${l[s]||s||'—'}</span>`}
+function avCol(n){const c=['#4a8fc1','#e63950','#f5a623','#27ae60','#8e44ad','#16a085','#e67e22'];let h=0;for(const ch of(n||''))h=(h+ch.charCodeAt(0))%c.length;return c[h]}
+function getEL(){
+  let list=curRole==='manager'?employees.filter(e=>e.manager&&e.manager.toLowerCase().includes(curUser.split(' ')[0].toLowerCase())):[...employees];
+  const q=(document.getElementById('eSearch')||{}).value?.toLowerCase()||'';
+  const bu=(document.getElementById('fBU')||{}).value||'';
+  const st=(document.getElementById('fSt')||{}).value||'';
+  const ten=(document.getElementById('fTen')||{}).value||'';
+  if(q)list=list.filter(e=>[e.name,e.emp_id,e.bu,e.function_name,e.skills,e.skills2,e.manager,e.domain].join(' ').toLowerCase().includes(q));
+  if(bu)list=list.filter(e=>e.bu===bu);
+  if(st)list=list.filter(e=>e.status===st);
+  if(ten==='new')list=list.filter(e=>tenMo(e.doj)<3);
+  else if(ten==='mid')list=list.filter(e=>{const m=tenMo(e.doj);return m>=3&&m<12;});
+  else if(ten==='sr')list=list.filter(e=>tenMo(e.doj)>=12);
+  return list;
+}
+
+/* ══ DASHBOARD ══ */
+function renderDash(){
+  const tot=employees.length;
+  const gr=employees.filter(e=>e.status==='green').length;
+  const am=employees.filter(e=>e.status==='amber').length;
+  const rd=employees.filter(e=>e.status==='red').length;
+  const nw=employees.filter(e=>tenMo(e.doj)<3).length;
+  const sr=employees.filter(e=>tenMo(e.doj)>=12).length;
+
+  document.getElementById('srow').innerHTML=`
+    <div class="stat sc-grey" onclick="openDrill('all')">
+      <div class="stat-icon">👥</div>
+      <div class="sv">${tot}</div><div class="sl">Total Employees</div>
+      <div class="sarr">drill in →</div>
+    </div>
+    <div class="stat sc-green" onclick="openDrill('green')">
+      <div class="stat-icon" style="color:var(--green)">✦</div>
+      <div class="sv" style="color:var(--green)">${gr}</div><div class="sl">Assigned</div>
+      <div class="sarr">drill in →</div>
+    </div>
+    <div class="stat sc-amber" onclick="openDrill('amber')">
+      <div class="stat-icon" style="color:var(--amber)">◑</div>
+      <div class="sv" style="color:var(--amber)">${am}</div><div class="sl">Waiting</div>
+      <div class="sarr">drill in →</div>
+    </div>
+    <div class="stat sc-red" onclick="openDrill('red')">
+      <div class="stat-icon" style="color:var(--red)">◎</div>
+      <div class="sv" style="color:var(--red)">${rd}</div><div class="sl">No Project</div>
+      <div class="sarr">drill in →</div>
+    </div>
+    <div class="stat sc-blue" onclick="openDrill('new')">
+      <div class="stat-icon" style="color:var(--blue)">★</div>
+      <div class="sv" style="color:var(--blue)">${nw}</div><div class="sl">New Joiners</div>
+      <div class="sarr">drill in →</div>
+    </div>`;
+
+  // BU Distribution chart — clickable
+  const buC={};employees.forEach(e=>{buC[e.bu]=(buC[e.bu]||0)+1});
+  const mx=Math.max(...Object.values(buC),1);
+  document.getElementById('buChart').innerHTML=Object.entries(buC).sort((a,b)=>b[1]-a[1]).map(([bu,ct])=>`
+    <div class="brow" onclick="openDrill('bu:${bu}')" style="cursor:pointer;padding:4px 6px;border-radius:6px;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background=''">
+      <div class="blbls">
+        <span style="font-weight:700;color:${BU_COLORS[bu]||'#8fa3b1'};font-size:12px">${bu}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)">${ct} people</span>
+          <span style="font-size:9px;color:var(--text3);opacity:.7">→</span>
+        </div>
+      </div>
+      <div class="btrack"><div class="bfill" style="width:${Math.round(ct/mx*100)}%;background:${BU_COLORS[bu]||'#8fa3b1'}"></div></div>
+    </div>`).join('')||'<div style="color:var(--text3);font-size:12px">No data yet</div>';
+
+  // Project status breakdown — clickable
+  const buSt={};
+  employees.forEach(e=>{
+    if(!buSt[e.bu])buSt[e.bu]={g:0,a:0,r:0};
+    if(e.status==='green')buSt[e.bu].g++;
+    else if(e.status==='amber')buSt[e.bu].a++;
+    else buSt[e.bu].r++;
+  });
+  document.getElementById('stChart').innerHTML=`
+    <div style="display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap">
+      <div onclick="openDrill('green')" style="cursor:pointer;flex:1;min-width:80px;background:var(--green-bg);border:1px solid var(--green-mid);border-radius:10px;padding:10px 14px;text-align:center;transition:opacity .15s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
+        <div style="font-size:1.5rem;font-weight:800;color:var(--green)">${gr}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">Assigned</div>
+      </div>
+      <div onclick="openDrill('amber')" style="cursor:pointer;flex:1;min-width:80px;background:var(--amber-bg);border:1px solid var(--amber-mid);border-radius:10px;padding:10px 14px;text-align:center;transition:opacity .15s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
+        <div style="font-size:1.5rem;font-weight:800;color:var(--amber)">${am}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">Waiting</div>
+      </div>
+      <div onclick="openDrill('red')" style="cursor:pointer;flex:1;min-width:80px;background:var(--red-bg);border:1px solid var(--red-mid);border-radius:10px;padding:10px 14px;text-align:center;transition:opacity .15s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
+        <div style="font-size:1.5rem;font-weight:800;color:var(--red)">${rd}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">No Project</div>
+      </div>
+    </div>
+    ${Object.entries(buSt).map(([bu,s])=>`
+      <div onclick="openDrill('bu:${bu}')" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;transition:background .15s;margin-bottom:4px" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background=''">
+        <span style="font-weight:700;font-size:11px;color:${BU_COLORS[bu]||'var(--grey)'};min-width:52px">${bu}</span>
+        <div style="flex:1;display:flex;height:8px;border-radius:4px;overflow:hidden;gap:1px">
+          ${s.g?`<div style="flex:${s.g};background:var(--green);opacity:.85"></div>`:''}
+          ${s.a?`<div style="flex:${s.a};background:var(--amber);opacity:.85"></div>`:''}
+          ${s.r?`<div style="flex:${s.r};background:var(--red);opacity:.85"></div>`:''}
+        </div>
+        <span style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace">${s.g+s.a+s.r}</span>
+      </div>`).join('')}`;
+
+  // Alerts
+  const rdE=employees.filter(e=>e.status==='red');
+  const pdC=connects.filter(c=>c.status==='pending'||c.status==='overdue');
+  const nwNC=employees.filter(e=>tenMo(e.doj)<90&&!connects.find(c=>c.emp_id===e.id&&c.type==='post-joining'&&c.status==='done'));
+  document.getElementById('alerts').innerHTML=[
+    ...rdE.slice(0,3).map(e=>`<div class="aitem" style="background:var(--red-bg);border-radius:8px" onclick="viewEmp('${e.id}')"><div class="aicon" style="background:var(--red-mid)">🚨</div><div style="flex:1"><strong style="font-size:12.5px;color:var(--text)">${e.name}</strong><div style="font-size:10.5px;color:var(--red)">${e.bu} · ${e.function_name} · No Project</div></div></div>`),
+    ...pdC.slice(0,2).map(c=>`<div class="aitem" style="background:var(--amber-bg);border-radius:8px"><div class="aicon" style="background:var(--amber-mid)">⏳</div><div style="flex:1"><strong style="font-size:12.5px;color:var(--text)">${c.emp_name}</strong><div style="font-size:10.5px;color:var(--amber)">${c.type} connect — ${c.status}</div></div></div>`),
+    ...nwNC.slice(0,2).map(e=>`<div class="aitem" style="background:var(--blue-bg);border-radius:8px" onclick="openCM('${e.id}')"><div class="aicon" style="background:var(--blue-mid)">📋</div><div style="flex:1"><strong style="font-size:12.5px;color:var(--text)">${e.name}</strong><div style="font-size:10.5px;color:var(--blue)">Post-joining connect pending</div></div></div>`),
+  ].join('')||'<div style="color:var(--green);font-size:12.5px;padding:.75rem;background:var(--green-bg);border-radius:8px;border:1px solid var(--green-mid)">✓ All clear — no alerts</div>';
+
+  // Connects due
+  const due=connects.filter(c=>c.next_date&&new Date(c.next_date)<=new Date(Date.now()+7*86400000)&&c.status!=='done').slice(0,5);
+  document.getElementById('conDue').innerHTML=due.length?due.map(c=>`<div class="lrow" style="cursor:pointer" onclick="showPage('pgCon')"><span style="font-weight:600;color:var(--text);font-size:12.5px">${c.emp_name}</span><span style="font-size:11px;color:var(--text3)">${c.type}</span><span class="lval" style="color:var(--amber)">${c.next_date}</span></div>`).join(''):'<div style="color:var(--text3);font-size:12.5px;padding:.5rem">No connects due this week</div>';
+  document.getElementById('dashAct').innerHTML=(curRole==='master'||curRole==='hr')?`<button class="btn b-red" onclick="openEM()">+ Add Employee</button>`:'';
+}
+
+function openDrill(filter){
+  let list=[];
+  let title='';
+  if(filter==='all'){list=employees;title='All Employees ('+employees.length+')';}
+  else if(filter==='green'){list=employees.filter(e=>e.status==='green');title='Assigned Employees ('+list.length+')';}
+  else if(filter==='amber'){list=employees.filter(e=>e.status==='amber');title='Waiting for Project ('+list.length+')';}
+  else if(filter==='red'){list=employees.filter(e=>e.status==='red');title='No Project ('+list.length+')';}
+  else if(filter==='new'){list=employees.filter(e=>tenMo(e.doj)<3);title='New Joiners <3m ('+list.length+')';}
+  else if(filter.startsWith('bu:')){const bu=filter.slice(3);list=employees.filter(e=>e.bu===bu);title=bu+' — All Employees ('+list.length+')';}
+  document.getElementById('drillTitle').textContent=title;
+  document.getElementById('drillBody').innerHTML=list.length?`
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="position:sticky;top:0;background:var(--panel);z-index:1">
+        <th style="padding:10px 14px;text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace">Employee</th>
+        <th style="padding:10px 14px;text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace">BU / Function</th>
+        <th style="padding:10px 14px;text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace">Project</th>
+        <th style="padding:10px 14px;text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace">Status</th>
+        <th style="padding:10px 14px;text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace">Skills</th>
+      </tr></thead>
+      <tbody>${list.map((e,i)=>`<tr style="${i%2===1?'background:rgba(255,255,255,0.02)':''}">
+        <td style="padding:10px 14px;border-bottom:1px solid var(--border)">
+          <div style="font-weight:700;color:var(--text);cursor:pointer;font-size:13px" onclick="closeMo('moDrill');viewEmp('${e.id}')">${e.name}</div>
+          <div style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace">${e.emp_id||e.id} · ${e.designation||'—'}</div>
+        </td>
+        <td style="padding:10px 14px;border-bottom:1px solid var(--border)">
+          <span style="font-weight:700;font-size:12px;color:${BU_COLORS[e.bu]||'var(--grey)'}">${e.bu||'—'}</span>
+          <div style="font-size:11px;color:var(--text3)">${e.function_name||'—'}</div>
+        </td>
+        <td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:${e.project?'var(--text2)':'var(--text3)'}">${e.project||'—'}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid var(--border)">${stBadge(e.status)}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid var(--border)"><div style="display:flex;flex-wrap:wrap;gap:2px">${(e.skills||'').split(',').slice(0,3).filter(Boolean).map(s=>`<span style="font-size:9.5px;padding:1px 6px;background:var(--blue-bg);color:var(--blue);border-radius:3px;border:1px solid var(--blue-mid)">${s.trim()}</span>`).join('')}</div></td>
+      </tr>`).join('')}</tbody>
+    </table>`:'<div style="padding:2rem;text-align:center;color:var(--text3)">No employees found</div>';
+  openMo('moDrill');
+}
+
+function goEF(bu,st){showPage('pgEmp');setTimeout(()=>{if(bu)document.getElementById('fBU').value=bu;if(st)document.getElementById('fSt').value=st;renderET();},50)}
+
+
+/* ══ EMPLOYEES ══ */
+function renderEmpPage(){
+  const bs=document.getElementById('fBU');bs.innerHTML='<option value="">All BUs</option>'+Object.keys(BU_FNS).map(b=>`<option>${b}</option>`).join('');
+  document.getElementById('empAct').innerHTML=(curRole==='master'||curRole==='hr')?`<button class="btn b-red" onclick="openEM()">+ Add Employee</button>`:'';
+  renderET();
+}
+
+function renderET(){
+  const list=getEL();
+  const ce=curRole==='master'||curRole==='hr';
+  document.getElementById('etbl').innerHTML=`<table><thead><tr><th>Employee</th><th>BU / Function</th><th>Skills</th><th>Tenure</th><th>Status</th><th>Manager</th><th>Actions</th></tr></thead><tbody>${list.length?list.map(e=>`<tr>
+    <td><div class="en" onclick="viewEmp('${e.id}')">${e.name}</div><div class="eid">${e.emp_id||e.id}</div></td>
+    <td><div style="font-weight:600;font-size:12.5px;color:${BU_COLORS[e.bu]||'var(--text2)'}">${e.bu||'—'}</div><div style="font-size:11px;color:var(--text3)">${e.function_name||'—'}</div></td>
+    <td><div style="display:flex;flex-wrap:wrap;gap:2px;max-width:180px">${(e.skills||'').split(',').slice(0,3).filter(Boolean).map(s=>`<span class="stag">${s.trim()}</span>`).join('')}${(e.skills||'').split(',').length>3?`<span style="font-size:10px;color:var(--text3)">+${(e.skills||'').split(',').length-3}</span>`:''}</div></td>
+    <td><span class="tv">${tenStr(e.doj)}</span></td>
+    <td>${stBadge(e.status)}</td>
+    <td style="font-size:12px;color:var(--text3)">${e.manager||'—'}</td>
+    <td><div class="abtns"><button class="ab av" onclick="viewEmp('${e.id}')">View</button>${ce?`<button class="ab ae" onclick="openEM('${e.id}')">Edit</button><button class="ab ad" onclick="delEmp('${e.id}')">Del</button>`:''}</div></td>
+  </tr>`).join(''):`<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text3)">No employees found</td></tr>`}</tbody></table>`;
+}
+
+/* ══ EMPLOYEE MODAL ══ */
+function updFnDrop(){const bu=document.getElementById('fBUm').value;document.getElementById('fFn').innerHTML=(BU_FNS[bu]||[]).map(f=>`<option>${f}</option>`).join('')}
+
+function openEM(id=null){
+  editEmpId=id;
+  document.getElementById('moET').textContent=id?'Edit Employee':'Add Employee';
+  const e=id?employees.find(x=>x.id===id):null;
+  const set=(fid,val)=>{const el=document.getElementById(fid);if(el)el.value=val||''};
+  if(e){
+    set('fId',e.emp_id||e.id);set('fNm',e.name);set('fEm',e.email);set('fPh',e.phone);set('fDj',e.doj);set('fLo',e.location);
+    set('fBUm',e.bu);updFnDrop();set('fFn',e.function_name);set('fDo',e.domain);set('fMg',e.manager);set('fDe',e.designation);set('fGr',e.grade);
+    set('fS1',e.skills);set('fS2',e.skills2);set('fSL',e.skill_level||'Senior');set('fEx',e.exp_years);
+    set('fPr',e.project);set('fPS',e.status||'amber');set('fP1',e.proj_start);set('fP2',e.proj_end);set('fNt',e.notes);
+  } else {
+    ['fId','fNm','fEm','fPh','fDj','fLo','fDo','fMg','fDe','fGr','fS1','fS2','fEx','fPr','fP1','fP2','fNt'].forEach(id=>set(id,''));
+    set('fPS','amber');set('fSL','Senior');
+  }
+  openMo('moEmp');
+}
+
+async function saveEmp(){
+  const name=document.getElementById('fNm').value.trim();
+  const id=document.getElementById('fId').value.trim();
+  if(!name||!id){showToast('Name and Employee ID are required','err');return}
+  const emp={id:editEmpId||id,emp_id:id,name,email:document.getElementById('fEm').value.trim(),phone:document.getElementById('fPh').value.trim(),doj:document.getElementById('fDj').value,location:document.getElementById('fLo').value.trim(),bu:document.getElementById('fBUm').value,function_name:document.getElementById('fFn').value,domain:document.getElementById('fDo').value.trim(),manager:document.getElementById('fMg').value.trim(),designation:document.getElementById('fDe').value.trim(),grade:document.getElementById('fGr').value.trim(),skills:document.getElementById('fS1').value.trim(),skills2:document.getElementById('fS2').value.trim(),skill_level:document.getElementById('fSL').value,exp_years:parseInt(document.getElementById('fEx').value)||0,project:document.getElementById('fPr').value.trim(),status:document.getElementById('fPS').value,proj_start:document.getElementById('fP1').value,proj_end:document.getElementById('fP2').value,notes:document.getElementById('fNt').value.trim(),created_at:new Date().toISOString()};
+  await saveEmpDB(emp);
+  closeMo('moEmp');showToast((editEmpId?'Updated':'Added')+': '+name,'ok');renderET();renderDash();
+}
+
+async function delEmp(id){
+  const e=employees.find(x=>x.id===id);
+  if(!e||!confirm('Delete '+e.name+'?'))return;
+  await delEmpDB(id);showToast('Deleted','ok');renderET();renderDash();
+}
+
+/* ══ VIEW EMPLOYEE ══ */
+function viewEmp(id){
+  const e=employees.find(x=>x.id===id);if(!e)return;
+  const ec=connects.filter(c=>c.emp_id===id);
+  const col=avCol(e.name);const ini=(e.name||'').split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('moViewBody').innerHTML=`
+    <div class="pfhd"><div class="pfav" style="background:${col}22;color:${col}">${ini}</div><div><div class="pfname">${e.name}</div><div class="pfmeta">${e.emp_id||e.id} · ${e.designation||''} · ${e.bu||''} · ${e.function_name||''}</div><div style="margin-top:7px">${stBadge(e.status)}</div></div></div>
+    <div class="pfgrid">
+      <div class="pfc"><div class="pfct">Personal & Work</div>
+        <div class="pff"><span class="pfl">Email</span><span class="pfv">${e.email||'—'}</span></div>
+        <div class="pff"><span class="pfl">Phone</span><span class="pfv">${e.phone||'—'}</span></div>
+        <div class="pff"><span class="pfl">Location</span><span class="pfv">${e.location||'—'}</span></div>
+        <div class="pff"><span class="pfl">Joining Date</span><span class="pfv">${e.doj||'—'}</span></div>
+        <div class="pff"><span class="pfl">Tenure</span><span class="pfv" style="color:var(--amber)">${tenStr(e.doj)}</span></div>
+        <div class="pff"><span class="pfl">Grade</span><span class="pfv">${e.grade||'—'}</span></div>
+        <div class="pff"><span class="pfl">Manager</span><span class="pfv">${e.manager||'—'}</span></div>
+      </div>
+      <div class="pfc"><div class="pfct">Project</div>
+        <div class="pff"><span class="pfl">Status</span><span class="pfv">${stBadge(e.status)}</span></div>
+        <div class="pff"><span class="pfl">Project</span><span class="pfv">${e.project||'—'}</span></div>
+        <div class="pff"><span class="pfl">Start</span><span class="pfv">${e.proj_start||'—'}</span></div>
+        <div class="pff"><span class="pfl">Release</span><span class="pfv">${e.proj_end||'—'}</span></div>
+        <div class="pff"><span class="pfl">Skill Level</span><span class="pfv">${e.skill_level||'—'}</span></div>
+        <div class="pff"><span class="pfl">Experience</span><span class="pfv">${e.exp_years?e.exp_years+'y':'—'}</span></div>
+      </div>
+    </div>
+    <div class="pfc" style="margin-bottom:1rem"><div class="pfct">Skillset</div>
+      <div style="margin-bottom:8px"><div style="font-size:10px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.1em">Primary</div>
+      <div class="spills">${(e.skills||'').split(',').filter(Boolean).map(s=>`<span class="stag">${s.trim()}</span>`).join('')||'<span style="color:var(--text3);font-size:12px">None</span>'}</div></div>
+      ${e.skills2?`<div><div style="font-size:10px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.1em">Secondary</div><div class="spills">${e.skills2.split(',').filter(Boolean).map(s=>`<span class="stag" style="background:var(--amber-bg);color:var(--amber);border-color:var(--amber-mid)">${s.trim()}</span>`).join('')}</div></div>`:''}
+    </div>
+    ${ec.length?`<div class="pfc"><div class="pfct">Connect History</div>${ec.map(c=>`<div class="citem ${c.status==='done'?'cd':c.status==='overdue'?'co':'cp2'}"><div class="cdot" style="background:${c.status==='done'?'var(--green-bg)':c.status==='overdue'?'var(--red-bg)':'var(--amber-bg)'};color:${c.status==='done'?'#4ade80':c.status==='overdue'?'var(--red)':'var(--amber)'}">${c.status==='done'?'✓':c.status==='overdue'?'!':'⏳'}</div><div><div style="font-size:13px;font-weight:700;color:var(--text)">${c.type}</div><div style="font-size:11px;color:var(--text3)">${c.connect_date||'Not scheduled'}${c.hr_name?' · '+c.hr_name:''}</div>${c.notes?`<div style="font-size:12px;color:var(--text2);margin-top:5px">${c.notes}</div>`:''}</div></div>`).join('')}</div>`:''}
+    ${e.notes?`<div style="margin-top:1rem;padding:10px 12px;background:var(--amber-bg);border-radius:6px;font-size:12px;color:var(--amber);border-left:3px solid var(--amber)">${e.notes}</div>`:''}`;
+  openMo('moView');
+}
+
+/* ══ CONNECTS ══ */
+function renderConPage(){
+  const tot=connects.length,dn=connects.filter(c=>c.status==='done').length,pd=connects.filter(c=>c.status==='pending').length,od=connects.filter(c=>c.status==='overdue').length;
+  document.getElementById('cSrow').innerHTML=`
+    <div class="stat sc-grey"><div class="sv">${tot}</div><div class="sl">Total</div></div>
+    <div class="stat sc-green"><div class="sv" style="color:#4ade80">${dn}</div><div class="sl">Completed</div></div>
+    <div class="stat sc-amber"><div class="sv" style="color:var(--amber)">${pd}</div><div class="sl">Pending</div></div>
+    <div class="stat sc-red"><div class="sv" style="color:var(--red)">${od}</div><div class="sl">Overdue</div></div>
+    <div class="stat sc-blue"><div class="sv" style="color:var(--blue)">${employees.filter(e=>tenMo(e.doj)<3).length}</div><div class="sl">New Joiners</div></div>`;
+  popCEDrop();renderCT();
+}
+
+function renderCT(){
+  const q=(document.getElementById('cSearch')||{}).value?.toLowerCase()||'';
+  const tp=(document.getElementById('fCT')||{}).value||'';
+  const st=(document.getElementById('fCS')||{}).value||'';
+  let list=[...connects];
+  if(q)list=list.filter(c=>c.emp_name?.toLowerCase().includes(q));
+  if(tp)list=list.filter(c=>c.type===tp);
+  if(st)list=list.filter(c=>c.status===st);
+  const sc={done:'bg',pending:'ba',overdue:'br'};
+  document.getElementById('ctbl').innerHTML=`<table><thead><tr><th>Employee</th><th>Type</th><th>Date</th><th>Status</th><th>HR BP</th><th>Next Date</th><th>Notes</th><th>Actions</th></tr></thead><tbody>${list.length?list.map(c=>`<tr>
+    <td><div class="en" onclick="viewEmp('${c.emp_id}')">${c.emp_name||'—'}</div></td>
+    <td style="font-size:12px;font-weight:600;color:var(--text2)">${c.type}</td>
+    <td style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text3)">${c.connect_date||'—'}</td>
+    <td><span class="badge ${sc[c.status]||'bb'}">${c.status}</span></td>
+    <td style="font-size:12px;color:var(--text3)">${c.hr_name||'—'}</td>
+    <td style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:${c.next_date&&new Date(c.next_date)<new Date()?'var(--red)':'var(--text3)'}">${c.next_date||'—'}</td>
+    <td style="font-size:11.5px;color:var(--text3);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.notes||'—'}</td>
+    <td><div class="abtns"><button class="ab ae" onclick="editCon('${c.id}')">Edit</button><button class="ab ad" onclick="delCon('${c.id}')">Del</button></div></td>
+  </tr>`).join(''):`<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text3)">No connects found</td></tr>`}</tbody></table>`;
+}
+
+function popCEDrop(){document.getElementById('cEmp').innerHTML='<option value="">Select employee</option>'+employees.map(e=>`<option value="${e.id}">${e.name} (${e.emp_id||e.id})</option>`).join('')}
+
+function openCM(empId=null){
+  popCEDrop();
+  ['cDt','cNo','cNx','cAc','cHR'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  document.getElementById('cDt').value=new Date().toISOString().split('T')[0];
+  document.getElementById('cEmp').dataset.eid='';
+  if(empId) setTimeout(()=>{document.getElementById('cEmp').value=empId},50);
+  openMo('moCon');
+}
+
+function editCon(id){
+  const c=connects.find(x=>x.id===id); if(!c)return;
+  popCEDrop();
+  document.getElementById('cEmp').value=c.emp_id||'';
+  document.getElementById('cTy').value=c.type||'post-joining';
+  document.getElementById('cDt').value=c.connect_date||'';
+  document.getElementById('cSt2').value=c.status||'done';
+  document.getElementById('cHR').value=c.hr_name||'';
+  document.getElementById('cNo').value=c.notes||'';
+  document.getElementById('cNx').value=c.next_date||'';
+  document.getElementById('cAc').value=c.action||'';
+  document.getElementById('cEmp').dataset.eid=c.id;
+  openMo('moCon');
+}
+
+async function saveCon(){
+  const eid=document.getElementById('cEmp').value;
+  const emp=employees.find(e=>e.id===eid);
+  if(!eid||!emp){showToast('Please select an employee','err');return}
+  const editId=document.getElementById('cEmp').dataset.eid;
+  const con={id:editId||'CON-'+Date.now(),emp_id:eid,emp_name:emp.name,type:document.getElementById('cTy').value,connect_date:document.getElementById('cDt').value,status:document.getElementById('cSt2').value,hr_name:document.getElementById('cHR').value.trim(),notes:document.getElementById('cNo').value.trim(),next_date:document.getElementById('cNx').value,action:document.getElementById('cAc').value.trim(),created_at:new Date().toISOString()};
+  await saveConDB(con);closeMo('moCon');showToast('Connect saved','ok');renderConPage();
+}
+
+async function delCon(id){
+  if(!confirm('Delete this connect?'))return;
+  await delConDB(id);showToast('Deleted','ok');renderCT();
+}
+
+/* ══ PEOPLE VIEW ══ */
+function renderPeople(){
+  const buSel=document.getElementById('pvBU');
+  if(buSel&&!buSel.options.length>1) buSel.innerHTML='<option value="">All BUs</option>'+Object.keys(BU_FNS).map(b=>`<option>${b}</option>`).join('');
+  const q=(document.getElementById('pvQ')||{}).value?.toLowerCase()||'';
+  const bu=(document.getElementById('pvBU')||{}).value||'';
+  const st=(document.getElementById('pvSt')||{}).value||'';
+  // Populate BU dropdown
+  document.getElementById('pvBU').innerHTML='<option value="">All BUs</option>'+Object.keys(BU_FNS).map(b=>`<option>${b}</option>`).join('');
+  if(bu) document.getElementById('pvBU').value=bu;
+
+  let list=[...employees];
+  if(q) list=list.filter(e=>[e.name,e.bu,e.function_name,e.skills,e.skills2,e.designation].join(' ').toLowerCase().includes(q));
+  if(bu) list=list.filter(e=>e.bu===bu);
+  if(st) list=list.filter(e=>e.status===st);
+
+  // BU summary strip
+  const buC={};employees.forEach(e=>{if(!buC[e.bu])buC[e.bu]={total:0,green:0,amber:0,red:0};buC[e.bu].total++;buC[e.bu][e.status]=(buC[e.bu][e.status]||0)+1});
+  document.getElementById('pvBuStrip').innerHTML=Object.entries(buC).map(([b,c])=>`
+    <div onclick="document.getElementById('pvBU').value='${b}';renderPeople()" style="background:var(--panel);border:1px solid var(--border);border-radius:var(--rs);padding:8px 14px;cursor:pointer;transition:all .15s;border-top:2px solid ${BU_COLORS[b]||'#8fa3b1'}" onmouseover="this.style.borderColor='${BU_COLORS[b]||'#8fa3b1'}'" onmouseout="this.style.borderTopColor='${BU_COLORS[b]||'#8fa3b1'}';this.style.borderColor='var(--border)'">
+      <div style="font-size:10px;font-weight:700;color:${BU_COLORS[b]||'#8fa3b1'};letter-spacing:.1em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:5px">${b}</div>
+      <div style="font-size:1.3rem;font-weight:800;color:var(--text);line-height:1">${c.total}</div>
+      <div style="display:flex;gap:5px;margin-top:5px">
+        <span style="font-size:9.5px;background:var(--green-bg);color:#4ade80;padding:1px 5px;border-radius:3px;font-weight:600">${c.green||0}✓</span>
+        <span style="font-size:9.5px;background:var(--amber-bg);color:var(--amber);padding:1px 5px;border-radius:3px;font-weight:600">${c.amber||0}⏳</span>
+        ${(c.red||0)>0?`<span style="font-size:9.5px;background:var(--red-bg);color:var(--red);padding:1px 5px;border-radius:3px;font-weight:600">${c.red}!</span>`:''}
+      </div>
+    </div>`).join('');
+
+  // Occupancy bar
+  const tot=employees.length;const gr=employees.filter(e=>e.status==='green').length;const am=employees.filter(e=>e.status==='amber').length;const rd=employees.filter(e=>e.status==='red').length;
+  const pct=v=>Math.round(v/tot*100);
+  document.getElementById('pvOccBar').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:.85rem">
+      <div style="text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#4ade80">${pct(gr)}%</div><div style="font-size:11px;color:var(--text3)">Assigned (${gr})</div></div>
+      <div style="text-align:center"><div style="font-size:1.4rem;font-weight:800;color:var(--amber)">${pct(am)}%</div><div style="font-size:11px;color:var(--text3)">Waiting (${am})</div></div>
+      <div style="text-align:center"><div style="font-size:1.4rem;font-weight:800;color:var(--red)">${pct(rd)}%</div><div style="font-size:11px;color:var(--text3)">No Project (${rd})</div></div>
+    </div>
+    <div style="height:12px;border-radius:6px;overflow:hidden;display:flex">
+      <div style="width:${pct(gr)}%;background:#22c55e;transition:width .7s ease"></div>
+      <div style="width:${pct(am)}%;background:var(--amber);transition:width .7s ease"></div>
+      <div style="width:${pct(rd)}%;background:var(--red);transition:width .7s ease"></div>
+    </div>
+    <div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:var(--text3)">
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#22c55e;margin-right:4px"></span>Assigned</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--amber);margin-right:4px"></span>Waiting</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--red);margin-right:4px"></span>No Project</span>
+    </div>`;
+
+  // People cards
+  if(!list.length){document.getElementById('pvCards').innerHTML='<div style="color:var(--text3);text-align:center;padding:2rem;grid-column:1/-1">No employees match your filter</div>';return}
+  const stColor={green:'#22c55e',amber:'var(--amber)',red:'var(--red)'};
+  const stLabel={green:'Assigned',amber:'Waiting',red:'No Project'};
+  const slColor={Expert:'var(--red)',Senior:'var(--amber)',Intermediate:'var(--blue)',Beginner:'var(--grey)'};
+  document.getElementById('pvCards').innerHTML=list.map(e=>{
+    const col=avCol(e.name);
+    const ini=(e.name||'').split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+    const skills=(e.skills||'').split(',').filter(Boolean).map(s=>s.trim());
+    const skills2=(e.skills2||'').split(',').filter(Boolean).map(s=>s.trim());
+    const tenM=tenMo(e.doj);
+    const tenBg=tenM<3?'var(--blue-bg)':tenM<12?'var(--amber-bg)':'var(--green-bg)';
+    const tenTx=tenM<3?'var(--blue)':tenM<12?'var(--amber)':'#4ade80';
+    const expBar=Math.min(100,Math.round((e.exp_years||0)/12*100));
+    return `<div style="background:var(--panel);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:all .18s;cursor:pointer" onclick="viewEmp('${e.id}')" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,.3)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <!-- Card header -->
+      <div style="padding:.9rem 1rem;background:${col}18;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:40px;height:40px;border-radius:50%;background:${col}33;color:${col};display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:800;flex-shrink:0">${ini}</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${e.name}</div>
+            <div style="font-size:10.5px;color:var(--text3)">${e.designation||'—'} · ${e.grade||'—'}</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:${stColor[e.status]}22;color:${stColor[e.status]};border:1px solid ${stColor[e.status]}44">${stLabel[e.status]||'—'}</div>
+        </div>
+      </div>
+      <!-- BU/Function -->
+      <div style="padding:.6rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+        <span style="font-size:10px;font-weight:700;color:${BU_COLORS[e.bu]||'#8fa3b1'};letter-spacing:.08em;text-transform:uppercase;font-family:'JetBrains Mono',monospace">${e.bu||'—'}</span>
+        <span style="font-size:10px;color:var(--text3)">·</span>
+        <span style="font-size:11px;color:var(--text2)">${e.function_name||'—'}</span>
+        <span style="margin-left:auto;font-size:10px;padding:1px 7px;border-radius:3px;background:${tenBg};color:${tenTx};font-family:'JetBrains Mono',monospace;font-weight:600">${tenStr(e.doj)}</span>
+      </div>
+      <!-- Project -->
+      <div style="padding:.6rem 1rem;border-bottom:1px solid var(--border)">
+        <div style="font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;font-family:'JetBrains Mono',monospace">Project</div>
+        <div style="font-size:12px;font-weight:600;color:${e.project?'var(--text)':'var(--text3)'}">${e.project||'Not assigned'}</div>
+        ${e.proj_end?`<div style="font-size:10px;color:var(--text3);margin-top:2px">Until ${e.proj_end}</div>`:''}
+      </div>
+      <!-- Skills -->
+      <div style="padding:.6rem 1rem;border-bottom:1px solid var(--border)">
+        <div style="font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:5px;font-family:'JetBrains Mono',monospace">Primary Skills</div>
+        <div style="display:flex;flex-wrap:wrap;gap:3px">${skills.slice(0,4).map(s=>`<span style="font-size:9.5px;padding:1px 6px;background:var(--blue-bg);color:var(--blue);border-radius:3px;font-family:'JetBrains Mono',monospace;border:1px solid var(--blue-mid)">${s}</span>`).join('')}${skills.length>4?`<span style="font-size:9.5px;color:var(--text3)">+${skills.length-4}</span>`:''}</div>
+        ${skills2.length?`<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${skills2.slice(0,3).map(s=>`<span style="font-size:9.5px;padding:1px 6px;background:var(--amber-bg);color:var(--amber);border-radius:3px;font-family:'JetBrains Mono',monospace;border:1px solid var(--amber-mid)">${s}</span>`).join('')}</div>`:''}
+      </div>
+      <!-- Footer -->
+      <div style="padding:.6rem 1rem;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="font-size:9.5px;color:var(--text3);font-family:'JetBrains Mono',monospace">${e.exp_years||0}y exp</div>
+          <div style="width:50px;height:4px;background:var(--card);border-radius:2px;overflow:hidden"><div style="width:${expBar}%;height:100%;background:${slColor[e.skill_level]||'var(--grey)'};border-radius:2px"></div></div>
+          <div style="font-size:9.5px;color:${slColor[e.skill_level]||'var(--grey)'};font-weight:600">${e.skill_level||'—'}</div>
+        </div>
+        <div style="font-size:10px;color:var(--text3)">${e.location||'—'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ══ SKILLS ══ */
+let skillTab='skill';
+function renderSkills(){
+  const pg=document.getElementById('pgSkills');
+  const q=(document.getElementById('skillSearch')||{}).value?.toLowerCase()||'';
+  // Render tab bar + content container
+  pg.querySelector('#skillContent').innerHTML=`
+    <div style="display:flex;gap:4px;margin-bottom:1.5rem;background:var(--card);border-radius:10px;padding:4px;width:fit-content">
+      <button onclick="setSkillTab('skill')" id="stab-skill" class="stab ${skillTab==='skill'?'stab-active':''}">🔧 Skill View</button>
+      <button onclick="setSkillTab('dept')" id="stab-dept" class="stab ${skillTab==='dept'?'stab-active':''}">🏢 Department View</button>
+      <button onclick="setSkillTab('leader')" id="stab-leader" class="stab ${skillTab==='leader'?'stab-active':''}">👤 Leadership View</button>
+    </div>
+    <div id="skillTabContent"></div>`;
+  renderSkillTabContent(q);
+}
+
+function setSkillTab(tab){
+  skillTab=tab;
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('stab-active'));
+  const btn=document.getElementById('stab-'+tab);
+  if(btn)btn.classList.add('stab-active');
+  const q=(document.getElementById('skillSearch')||{}).value?.toLowerCase()||'';
+  renderSkillTabContent(q);
+}
+
+function renderSkillTabContent(q){
+  const el=document.getElementById('skillTabContent');
+  if(!el)return;
+  if(skillTab==='skill') el.innerHTML=renderSkillView(q);
+  else if(skillTab==='dept') el.innerHTML=renderDeptView(q);
+  else if(skillTab==='leader') el.innerHTML=renderLeaderView(q);
+}
+
+function renderSkillView(q){
+  // Build skill → employees map from live data
+  const skillMap={};
+  employees.forEach(e=>{
+    const allSkills=[...(e.skills||'').split(','),...(e.skills2||'').split(',')].map(s=>s.trim()).filter(Boolean);
+    allSkills.forEach(sk=>{
+      if(!skillMap[sk])skillMap[sk]=[];
+      skillMap[sk].push(e);
+    });
+  });
+  // Also enrich with SKILL_DATA base definitions
+  const skillDefs={};
+  Object.values(SKILL_DATA).forEach(fns=>Object.entries(fns).forEach(([fn,d])=>{
+    (d.lang||'').split(',').map(s=>s.trim()).filter(Boolean).forEach(s=>{if(!skillDefs[s])skillDefs[s]={fn,d};});
+  }));
+
+  const sorted=Object.entries(skillMap).sort((a,b)=>b[1].length-a[1].length);
+  const filtered=q?sorted.filter(([sk,emps])=>sk.toLowerCase().includes(q)||emps.some(e=>e.name.toLowerCase().includes(q)||e.bu.toLowerCase().includes(q))):sorted;
+  if(!filtered.length)return '<div style="color:var(--text3);text-align:center;padding:3rem">No skills match your search</div>';
+
+  return `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px">
+    ${filtered.map(([sk,emps])=>{
+      const maxExp=Math.max(...emps.map(e=>e.exp_years||0));
+      const levels={Expert:0,Senior:0,Intermediate:0,Beginner:0};
+      emps.forEach(e=>{if(levels[e.skill_level]!==undefined)levels[e.skill_level]++;});
+      const buSet=[...new Set(emps.map(e=>e.bu).filter(Boolean))];
+      return `<div style="background:var(--panel);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:all .18s" onmouseover="this.style.borderColor='var(--border2)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''" onclick="openSkillDrill('skill','${sk.replace(/'/g,'&#39;')}')">
+        <div style="padding:.85rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:13px;font-weight:700;color:var(--text)">${sk}</div>
+          <div style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-mid)">${emps.length} people</div>
+        </div>
+        <div style="padding:.7rem 1rem">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+            ${buSet.map(bu=>`<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:${BU_COLORS[bu]||'var(--grey)'}22;color:${BU_COLORS[bu]||'var(--grey)'};border:1px solid ${BU_COLORS[bu]||'var(--grey)'}44">${bu}</span>`).join('')}
+          </div>
+          <div style="display:flex;gap:8px;font-size:11px;color:var(--text3)">
+            ${levels.Expert?`<span style="color:var(--violet)">◆ ${levels.Expert} Expert</span>`:''}
+            ${levels.Senior?`<span style="color:var(--blue)">● ${levels.Senior} Senior</span>`:''}
+            ${levels.Intermediate?`<span style="color:var(--amber)">● ${levels.Intermediate} Mid</span>`:''}
+            ${levels.Beginner?`<span style="color:var(--grey)">● ${levels.Beginner} Junior</span>`:''}
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderDeptView(q){
+  let html='';
+  for(const [bu,fns] of Object.entries(SKILL_DATA)){
+    const col=BU_COLORS[bu]||'#8fa3b1';
+    const buEmps=employees.filter(e=>e.bu===bu);
+    const filtered=Object.entries(fns).filter(([fn,d])=>!q||[fn,d.lang,d.db,d.cloud,d.other,d.leader,bu].join(' ').toLowerCase().includes(q));
+    if(!filtered.length)continue;
+    const gr=buEmps.filter(e=>e.status==='green').length;
+    const am=buEmps.filter(e=>e.status==='amber').length;
+    const rd=buEmps.filter(e=>e.status==='red').length;
+    html+=`
+      <div style="margin-bottom:2rem">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem;padding:12px 16px;background:${col}18;border-radius:10px;border:1px solid ${col}30;cursor:pointer" onclick="openSkillDrill('dept','${bu}')">
+          <div style="width:12px;height:12px;border-radius:50%;background:${col};flex-shrink:0"></div>
+          <div style="font-size:13px;font-weight:800;color:${col};letter-spacing:.04em">${bu}</div>
+          <div style="font-size:11px;color:var(--text3)">${filtered.length} functions · ${buEmps.length} people</div>
+          <div style="margin-left:auto;display:flex;gap:6px">
+            <span style="font-size:10.5px;padding:2px 8px;border-radius:99px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-mid)">${gr} assigned</span>
+            ${am?`<span style="font-size:10.5px;padding:2px 8px;border-radius:99px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-mid)">${am} waiting</span>`:''}
+            ${rd?`<span style="font-size:10.5px;padding:2px 8px;border-radius:99px;background:var(--red-bg);color:var(--red);border:1px solid var(--red-mid)">${rd} no project</span>`:''}
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px">
+          ${filtered.map(([fn,d])=>{
+            const fnEmps=buEmps.filter(e=>e.function_name===fn);
+            return `<div style="background:var(--panel);border:1px solid var(--border);border-top:3px solid ${col};border-radius:var(--rs);padding:1rem;cursor:pointer;transition:all .18s" onmouseover="this.style.borderColor='${col}'" onmouseout="this.style.borderTopColor='${col}';this.style.borderColor='var(--border)';this.style.borderTopColor='${col}'" onclick="openSkillDrill('fn','${bu}::${fn.replace(/'/g,'&#39;')}')">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
+                <div style="font-size:13px;font-weight:700;color:var(--text)">${fn}</div>
+                ${fnEmps.length?`<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:${col}22;color:${col};border:1px solid ${col}44;flex-shrink:0">${fnEmps.length}</span>`:''}
+              </div>
+              ${d.leader&&d.leader!=='—'?`<div style="font-size:11px;color:var(--text3);margin-bottom:8px">👤 ${d.leader}</div>`:''}
+              ${d.lang?`<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:3px;font-family:'JetBrains Mono',monospace">Stack</div><div style="font-size:11.5px;color:var(--text2);margin-bottom:6px;line-height:1.5">${d.lang}</div>`:''}
+              ${d.db?`<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:3px;font-family:'JetBrains Mono',monospace">Database</div><div style="font-size:11px;color:var(--text2);margin-bottom:6px">${d.db}</div>`:''}
+              ${d.cloud?`<div style="font-size:10px;padding:2px 8px;border-radius:4px;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-mid);display:inline-block;margin-bottom:4px">☁ ${d.cloud}</div>`:''}
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }
+  return html||'<div style="color:var(--text3);text-align:center;padding:3rem">No departments match</div>';
+}
+
+function renderLeaderView(q){
+  // Build leader → employees + functions map
+  const leaderMap={};
+  employees.forEach(e=>{
+    const mgr=(e.manager||'').trim();
+    if(!mgr)return;
+    if(!leaderMap[mgr])leaderMap[mgr]={emps:[],bus:new Set(),fns:new Set()};
+    leaderMap[mgr].emps.push(e);
+    leaderMap[mgr].bus.add(e.bu);
+    leaderMap[mgr].fns.add(e.function_name);
+  });
+  // Also add from SKILL_DATA leaders
+  Object.entries(SKILL_DATA).forEach(([bu,fns])=>Object.entries(fns).forEach(([fn,d])=>{
+    if(!d.leader||d.leader==='—')return;
+    d.leader.split('/').map(l=>l.trim()).forEach(l=>{
+      if(!l)return;
+      if(!leaderMap[l])leaderMap[l]={emps:[],bus:new Set(),fns:new Set()};
+      leaderMap[l].fns.add(fn);
+      leaderMap[l].bus.add(bu);
+    });
+  }));
+
+  const filtered=Object.entries(leaderMap).filter(([name,data])=>!q||name.toLowerCase().includes(q)||[...data.bus].join(' ').toLowerCase().includes(q)||[...data.fns].join(' ').toLowerCase().includes(q));
+  if(!filtered.length)return '<div style="color:var(--text3);text-align:center;padding:3rem">No leaders match</div>';
+
+  const sorted=filtered.sort((a,b)=>b[1].emps.length-a[1].emps.length);
+  return `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
+    ${sorted.map(([name,data])=>{
+      const col=avCol(name);
+      const ini=name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+      const gr=data.emps.filter(e=>e.status==='green').length;
+      const am=data.emps.filter(e=>e.status==='amber').length;
+      const rd=data.emps.filter(e=>e.status==='red').length;
+      const bus=[...data.bus].filter(Boolean);
+      const fns=[...data.fns].filter(Boolean);
+      return `<div style="background:var(--panel);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:all .18s" onmouseover="this.style.borderColor='var(--border2)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''" onclick="openSkillDrill('leader','${name.replace(/'/g,'&#39;')}')">
+        <div style="padding:1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+          <div style="width:42px;height:42px;border-radius:50%;background:${col}22;color:${col};display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:800;flex-shrink:0;border:2px solid ${col}44">${ini}</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${name}</div>
+            <div style="font-size:10.5px;color:var(--text3);margin-top:2px">${bus.map(b=>`<span style="color:${BU_COLORS[b]||'var(--grey)'}">${b}</span>`).join(', ')}</div>
+          </div>
+          ${data.emps.length?`<div style="text-align:center;background:${col}18;border-radius:8px;padding:5px 10px;border:1px solid ${col}33"><div style="font-size:1.1rem;font-weight:800;color:${col}">${data.emps.length}</div><div style="font-size:9px;color:var(--text3)">reports</div></div>`:''}
+        </div>
+        <div style="padding:.75rem 1rem">
+          ${fns.length?`<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:5px;font-family:'JetBrains Mono',monospace">Functions</div>
+          <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px">${fns.slice(0,3).map(f=>`<span style="font-size:10px;padding:2px 7px;border-radius:4px;background:var(--card2);color:var(--text2);border:1px solid var(--border)">${f}</span>`).join('')}${fns.length>3?`<span style="font-size:10px;color:var(--text3)">+${fns.length-3} more</span>`:''}</div>`:''}
+          ${data.emps.length?`<div style="display:flex;gap:6px">
+            ${gr?`<span style="font-size:10.5px;padding:2px 8px;border-radius:99px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-mid)">${gr} assigned</span>`:''}
+            ${am?`<span style="font-size:10.5px;padding:2px 8px;border-radius:99px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-mid)">${am} waiting</span>`:''}
+            ${rd?`<span style="font-size:10.5px;padding:2px 8px;border-radius:99px;background:var(--red-bg);color:var(--red);border:1px solid var(--red-mid)">${rd} no project</span>`:''}
+          </div>`:'<div style="font-size:11px;color:var(--text3)">Function leader (no direct reports in DB)</div>'}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function openSkillDrill(type, value){
+  let list=[], title='';
+  if(type==='skill'){
+    list=employees.filter(e=>[...(e.skills||'').split(','),...(e.skills2||'').split(',')].map(s=>s.trim()).includes(value));
+    title=`Skill: ${value} (${list.length} people)`;
+  } else if(type==='dept'){
+    list=employees.filter(e=>e.bu===value);
+    title=`${value} — All Employees (${list.length})`;
+  } else if(type==='fn'){
+    const [bu,fn]=value.split('::');
+    list=employees.filter(e=>e.bu===bu&&e.function_name===fn);
+    title=`${bu} / ${fn} (${list.length} people)`;
+  } else if(type==='leader'){
+    list=employees.filter(e=>(e.manager||'').trim()===value);
+    title=`Reports to: ${value} (${list.length})`;
+  }
+  if(!list.length){
+    showToast('No employee data found for this selection','info');
+    return;
+  }
+  document.getElementById('drillTitle').textContent=title;
+  document.getElementById('drillBody').innerHTML=`
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="position:sticky;top:0;background:var(--panel);z-index:1">
+        <th style="padding:10px 14px;text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace">Employee</th>
+        <th style="padding:10px 14px;text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace">BU / Function</th>
+        <th style="padding:10px 14px;text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace">Status</th>
+        <th style="padding:10px 14px;text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace">Skills</th>
+        <th style="padding:10px 14px;text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace">Exp / Level</th>
+      </tr></thead>
+      <tbody>${list.map((e,i)=>`<tr style="${i%2===1?'background:rgba(255,255,255,0.02)':''}">
+        <td style="padding:10px 14px;border-bottom:1px solid var(--border)">
+          <div style="font-weight:700;color:var(--text);cursor:pointer;font-size:13px" onclick="closeMo('moDrill');viewEmp('${e.id}')">${e.name}</div>
+          <div style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace">${e.emp_id||e.id}</div>
+        </td>
+        <td style="padding:10px 14px;border-bottom:1px solid var(--border)">
+          <span style="font-weight:700;font-size:12px;color:${BU_COLORS[e.bu]||'var(--grey)'}">${e.bu}</span>
+          <div style="font-size:11px;color:var(--text3)">${e.function_name||'—'}</div>
+        </td>
+        <td style="padding:10px 14px;border-bottom:1px solid var(--border)">${stBadge(e.status)}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid var(--border)"><div style="display:flex;flex-wrap:wrap;gap:2px">${(e.skills||'').split(',').slice(0,3).filter(Boolean).map(s=>`<span style="font-size:9.5px;padding:1px 6px;background:var(--blue-bg);color:var(--blue);border-radius:3px;border:1px solid var(--blue-mid)">${s.trim()}</span>`).join('')}</div></td>
+        <td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)">${e.exp_years||0}y · ${e.skill_level||'—'}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  openMo('moDrill');
+}
+
+
+/* ══ BULK UPLOAD ══ */
+let bulkRaw=[];
+function handleDrop(e){e.preventDefault();document.getElementById('upz').classList.remove('drag');if(e.dataTransfer.files[0])procBulk(e.dataTransfer.files[0])}
+function handleBF(e){if(e.target.files[0])procBulk(e.target.files[0])}
+function procBulk(file){
+  const ext=file.name.split('.').pop().toLowerCase();
+  const rd=new FileReader();
+  rd.onload=ev=>{
+    try{
+      let rows;
+      if(ext==='csv')rows=parseCSV(ev.target.result);
+      else{
+        const wb=XLSX.read(ev.target.result,{type:'binary'});
+        rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+      }
+      bulkRaw=rows;showBulkPrev(rows,file.name);
+    }catch(err){showToast('File error: '+err.message,'err')}
+  };
+  ext==='csv'?rd.readAsText(file):rd.readAsBinaryString(file);
+}
+function cv(row,opts){for(const o of opts){const k=Object.keys(row).find(k=>k.toLowerCase().replace(/[\s_\-]/g,'').includes(o.toLowerCase().replace(/[\s_\-]/g,'')));if(k&&String(row[k]).trim())return String(row[k]).trim()}return''}
+function normSt(v){const s=(v||'').toLowerCase();if(s.includes('green')||s.includes('assign'))return'green';if(s.includes('red')||s.includes('no proj'))return'red';return'amber'}
+function parseCSV(txt){const l=txt.trim().split('\n'),h=l[0].split(',').map(x=>x.trim().replace(/^"|"$/g,''));return l.slice(1).map(r=>{const v=r.split(',').map(x=>x.trim().replace(/^"|"$/g,''));const o={};h.forEach((k,i)=>o[k]=v[i]||'');return o})}
+function showBulkPrev(rows,fname){
+  const cols = Object.keys(rows[0]||{}).slice(0,6);
+  const previewRows = rows.slice(0,5);
+  const tableHTML = previewRows.length ? `
+    <div style="overflow-x:auto;margin-top:8px">
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead><tr>${cols.map(c=>`<th style="padding:5px 8px;text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);white-space:nowrap;font-family:'JetBrains Mono',monospace">${c}</th>`).join('')}</tr></thead>
+      <tbody>${previewRows.map(r=>`<tr>${cols.map(c=>`<td style="padding:5px 8px;border-bottom:1px solid var(--border);color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r[c]||'—'}</td>`).join('')}</tr>`).join('')}</tbody>
+    </table></div>
+    ${rows.length>5?`<div style="font-size:11px;color:var(--text3);margin-top:5px;padding:0 4px">... and ${rows.length-5} more rows</div>`:''}
+  ` : '';
+  document.getElementById('upPrev').innerHTML=`
+    <div style="background:var(--card);border-radius:8px;padding:.85rem 1rem;margin-bottom:.75rem;border:1px solid var(--border2)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:1.1rem">📄</span>
+        <span style="font-size:13px;font-weight:700;color:var(--text)">${fname}</span>
+        <span style="font-size:11px;padding:2px 8px;background:var(--green-bg);color:#4ade80;border-radius:4px;font-weight:600;border:1px solid var(--green-mid)">${rows.length} rows ready</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">${cols.length} columns detected: <span style="color:var(--blue)">${cols.slice(0,4).join(', ')}${cols.length>4?' +more':''}</span></div>
+      ${tableHTML}
+    </div>`;
+  document.getElementById('impBtn').style.display='flex';
+  pendingImport=rows.map((r,i)=>({id:cv(r,['employeeid','id','empid'])||'IMP-'+String(i+1).padStart(4,'0'),emp_id:cv(r,['employeeid','id','empid'])||'IMP-'+String(i+1).padStart(4,'0'),name:cv(r,['name','fullname','employeename'])||'Unknown',email:cv(r,['email','mail']),phone:cv(r,['phone','mobile']),doj:cv(r,['doj','dateofjoining','joiningdate']),location:cv(r,['location','city']),bu:cv(r,['bu','businessunit','unit','department']),function_name:cv(r,['function','role','functionname']),domain:cv(r,['domain']),manager:cv(r,['manager','reportingmanager']),designation:cv(r,['designation','title']),grade:cv(r,['grade','level','band']),skills:cv(r,['skills','primaryskills','skill','technologies']),skills2:cv(r,['secondaryskills','skills2']),skill_level:cv(r,['skilllevel','proficiency'])||'Intermediate',exp_years:parseInt(cv(r,['experience','exp','expyears']))||0,project:cv(r,['project','currentproject']),status:normSt(cv(r,['status','projectstatus','availability'])),proj_start:cv(r,['projectstart','startdate']),proj_end:cv(r,['releasedate','enddate']),notes:cv(r,['notes','comments']),created_at:new Date().toISOString()}));
+}
+async function doBulk(){
+  if(!pendingImport.length){showToast('No data','err');return}
+  let ok=0,fail=0;
+  for(const emp of pendingImport){try{await saveEmpDB(emp);ok++}catch(e){fail++}}
+  document.getElementById('impLog').innerHTML=`
+    <div class="dc">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span style="font-size:1.2rem;font-weight:800;color:#4ade80">${ok}</span>
+        <span style="font-size:13px;color:var(--text2)">employees imported successfully</span>
+        ${fail?`<span style="font-size:1.2rem;font-weight:800;color:var(--red);margin-left:8px">${fail}</span><span style="font-size:13px;color:var(--text2)">failed</span>`:''}
+        <button onclick="showPage('pgEmp')" style="margin-left:auto;background:var(--blue);color:#fff;border:none;padding:7px 14px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer">View Employees →</button>
+      </div>
+    </div>`;
+  showToast(ok+' employees imported!','ok');
+  pendingImport=[];
+  document.getElementById('impBtn').style.display='none';
+  document.getElementById('upPrev').innerHTML='';
+  // Refresh employee table and dashboard if on those pages
+  if(document.getElementById('etbl')) renderET();
+  if(document.getElementById('srow')) renderDash();
+}
+
+/* ══ SETTINGS ══ */
+function renderSettings(){
+  document.getElementById('credList').innerHTML=Object.entries(CREDS).map(([r,c])=>`<div class="cred-row" style="padding:10px 0;border-bottom:1px solid var(--border)"><div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">${c.label}</div><div style="display:flex;gap:16px;font-size:11.5px;color:var(--text3);font-family:'JetBrains Mono',monospace"><span>user: <strong style="color:var(--amber)">${c.u}</strong></span><span>pass: <strong style="color:var(--amber)">${c.p}</strong></span></div></div>`).join('');
+  document.getElementById('dbInfo').innerHTML=`<div style="padding:10px 13px;border-radius:8px;background:${USE_SB?'var(--green-bg)':'var(--amber-bg)'};margin-bottom:1rem"><div style="font-size:13px;font-weight:700;color:${USE_SB?'#4ade80':'var(--amber)'}">${USE_SB?'✓ Supabase Connected':'⚠ Local Mode'}</div><div style="font-size:11px;color:var(--text3);margin-top:4px">${SB_URL}</div></div>
+  <button onclick="showSqlModal()" style="width:100%;background:var(--amber);color:#fff;border:none;padding:9px;border-radius:7px;font-size:12.5px;font-weight:700;cursor:pointer">View / Copy SQL Schema</button>`;
+}
+
+/* ══ UTILS ══ */
+function openMo(id){document.getElementById(id).classList.add('open')}
+function closeMo(id){document.getElementById(id).classList.remove('open')}
+let _tt;
+function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show t'+type;clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3000)}
+
+
+
+/* ══ START — login shows immediately, DB connects in background ══ */
+document.addEventListener('DOMContentLoaded',()=>{
+  // Version bump — clear old 7-employee demo, load new 43-employee dataset
+  const DATA_VER = 'v3';
+  if(localStorage.getItem('wiq_ver') !== DATA_VER){
+    localStorage.removeItem('wiq_e');
+    localStorage.removeItem('wiq_c');
+    localStorage.setItem('wiq_ver', DATA_VER);
+  }
+  // Pre-fill default role credentials
+  document.getElementById('lu').value=CREDS.master.u;
+  document.getElementById('lp').value=CREDS.master.p;
+  initDB();
+});
+</script>
+</body>
+</html>
