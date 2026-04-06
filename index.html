@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workforce Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root {
+  /* ── Core palette from design images ── */
+  --navy:    #1b2a3b;
+  --navy2:   #243447;
+  --navy3:   #2e4057;
+  --navy4:   #1a2535;
+  --panel:   #202f3e;
+  --card:    #253344;
+  --card2:   #2a3a4d;
+  --border:  rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+
+  /* ── Accent colours ── */
+  --red:    #e63950;
+  --red-bg: rgba(230,57,80,0.15);
+  --red-mid:rgba(230,57,80,0.35);
+  --amber:  #f5a623;
+  --amber-bg:rgba(245,166,35,0.15);
+  --amber-mid:rgba(245,166,35,0.35);
+  --blue:   #4a8fc1;
+  --blue-bg:rgba(74,143,193,0.15);
+  --blue-mid:rgba(74,143,193,0.35);
+  --grey:   #8fa3b1;
+  --grey-bg:rgba(143,163,177,0.12);
+  --green:  #27ae60;
+  --green-bg:rgba(39,174,96,0.15);
+  --green-mid:rgba(39,174,96,0.35);
+
+  /* ── Text ── */
+  --text:   #e8edf2;
+  --text2:  #9db3c2;
+  --text3:  #5a7285;
+
+  --shadow: 0 4px 20px rgba(0,0,0,0.4);
+  --r: 12px; --rs: 8px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--navy);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+}
+input, select, textarea, button { font-family: 'Inter', sans-serif; }
+
+/* ══════════════════════════════
+   CONFIG / LOGIN SCREENS
+══════════════════════════════ */
+.auth-screen {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 2rem;
+  background: var(--navy);
+  position: relative; overflow: hidden;
+}
+.auth-screen::before {
+  content: '';
+  position: absolute; top: -200px; right: -200px;
+  width: 600px; height: 600px; border-radius: 50%;
+  border: 60px solid rgba(74,143,193,0.06);
+  pointer-events: none;
+}
+.auth-screen::after {
+  content: '';
+  position: absolute; bottom: -150px; left: -150px;
+  width: 400px; height: 400px; border-radius: 50%;
+  border: 40px solid rgba(230,57,80,0.06);
+  pointer-events: none;
+}
+.auth-card {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 18px;
+  padding: 2.5rem;
+  width: 100%; max-width: 460px;
+  box-shadow: var(--shadow);
+  position: relative; z-index: 1;
+}
+.brand-logo {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 6px;
+}
+.brand-icon {
+  width: 36px; height: 36px;
+  background: var(--red);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: #fff;
+}
+.brand-name { font-size: 1.2rem; font-weight: 800; color: var(--text); }
+.brand-sub { font-size: 11.5px; color: var(--text3); margin-bottom: 2rem; }
+
+.fl { display: flex; flex-direction: column; gap: 2px; margin-bottom: 1rem; }
+.fl label {
+  font-size: 10.5px; font-weight: 600; color: var(--text3);
+  letter-spacing: .1em; text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+}
+.fi {
+  width: 100%; padding: 10px 13px;
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: var(--rs); font-size: 13px; color: var(--text);
+  outline: none; transition: border-color .2s, background .2s;
+}
+.fi:focus { border-color: var(--blue); background: var(--card2); }
+.fi::placeholder { color: var(--text3); }
+
+#connStatus {
+  display: none; padding: 9px 13px; border-radius: 7px;
+  font-size: 12.5px; font-weight: 600; margin-bottom: .75rem;
+}
+.btn-connect {
+  width: 100%; padding: 12px; background: var(--red);
+  color: #fff; border: none; border-radius: var(--rs);
+  font-size: 13.5px; font-weight: 700; cursor: pointer;
+  transition: opacity .2s; margin-top: .25rem;
+  letter-spacing: .02em;
+}
+.btn-connect:hover { opacity: .88; }
+.btn-connect:disabled { opacity: .5; cursor: not-allowed; }
+.btn-local {
+  width: 100%; padding: 10px;
+  background: transparent; color: var(--text3);
+  border: 1px solid var(--border2);
+  border-radius: var(--rs); font-size: 12.5px; font-weight: 600;
+  cursor: pointer; margin-top: .5rem; transition: all .2s;
+}
+.btn-local:hover { background: var(--card); color: var(--text2); }
+
+.config-note {
+  font-size: 11px; color: var(--text3); margin-top: 1rem;
+  line-height: 1.7; padding: 10px 13px;
+  background: var(--amber-bg); border-radius: 6px;
+  border-left: 3px solid var(--amber);
+}
+.config-note strong { color: var(--amber); }
+
+/* ── SQL setup box ── */
+#sqlSetupBox {
+  margin-top: 1rem;
+  background: var(--card);
+  border: 1px solid var(--blue-mid);
+  border-radius: 8px; padding: 1rem;
+}
+#sqlSetupBox .sql-title {
+  font-size: 11.5px; font-weight: 700; color: var(--blue);
+  margin-bottom: 8px; line-height: 1.5;
+}
+.sql-ta {
+  width: 100%; height: 190px;
+  font-size: 10.5px; font-family: 'JetBrains Mono', monospace;
+  background: var(--navy); border: 1px solid var(--border2);
+  border-radius: 6px; padding: 8px; color: #7dd3fc;
+  resize: none; outline: none;
+}
+.btn-copy-sql {
+  margin-top: 6px; padding: 6px 14px;
+  background: var(--blue); color: #fff;
+  border: none; border-radius: 5px;
+  font-size: 11.5px; font-weight: 700; cursor: pointer;
+}
+
+/* LOGIN */
+.role-tabs { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 1.5rem; }
+.role-tab {
+  padding: 10px 8px; border: 1px solid var(--border2);
+  border-radius: var(--rs); background: var(--card);
+  cursor: pointer; text-align: center; transition: all .18s;
+}
+.role-tab:hover { border-color: var(--border2); background: var(--card2); }
+.role-tab.active { border-color: var(--blue); background: var(--blue-bg); }
+.role-tab-icon { font-size: 1.3rem; margin-bottom: 3px; }
+.role-tab-name { font-size: 12px; font-weight: 700; color: var(--text); }
+.role-tab-desc { font-size: 10px; color: var(--text3); margin-top: 1px; }
+.role-tab.active .role-tab-name { color: var(--blue); }
+.err-msg {
+  display: none; font-size: 12px; color: var(--red);
+  background: var(--red-bg); border-radius: 6px;
+  padding: 8px 12px; margin-bottom: .75rem;
+  border: 1px solid var(--red-mid);
+}
+.hint-text {
+  font-size: 10.5px; color: var(--text3); text-align: center;
+  margin-top: .75rem; font-family: 'JetBrains Mono', monospace;
+}
+
+/* ══════════════════════════════
+   APP SHELL
+══════════════════════════════ */
+#appShell { display: none; flex-direction: column; min-height: 100vh; }
+
+/* ── TOPNAV ── */
+.topnav {
+  background: var(--navy4);
+  border-bottom: 1px solid var(--border);
+  padding: .7rem 1.75rem;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+  gap: 1rem;
+}
+.nav-brand { display: flex; align-items: center; gap: 8px; }
+.nav-brand-icon {
+  width: 28px; height: 28px; background: var(--red);
+  border-radius: 7px; display: flex; align-items: center;
+  justify-content: center; font-size: 13px; font-weight: 800; color: #fff;
+}
+.nav-brand-name { font-size: .95rem; font-weight: 800; color: var(--text); letter-spacing: -.01em; }
+.nav-brand-name span { color: var(--red); }
+.nav-tabs { display: flex; gap: 2px; }
+.nav-tab {
+  padding: 5px 13px; border-radius: 6px;
+  font-size: 12.5px; font-weight: 600; color: var(--text3);
+  cursor: pointer; transition: all .15s; border: none; background: none;
+}
+.nav-tab:hover { background: var(--card); color: var(--text2); }
+.nav-tab.active { background: var(--blue-bg); color: var(--blue); }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.user-chip {
+  font-size: 10.5px; padding: 4px 10px;
+  background: var(--card); border-radius: 5px;
+  color: var(--text2); font-family: 'JetBrains Mono', monospace;
+  border: 1px solid var(--border);
+}
+.logout-btn {
+  font-size: 11px; padding: 5px 10px;
+  border: 1px solid var(--border2); border-radius: 6px;
+  background: none; cursor: pointer; color: var(--text3);
+  transition: all .15s;
+}
+.logout-btn:hover { background: var(--red-bg); color: var(--red); border-color: var(--red-mid); }
+
+.app-body { flex: 1; padding: 1.5rem 1.75rem 3rem; max-width: 1440px; margin: 0 auto; width: 100%; }
+
+/* ── PAGE ── */
+.page { display: none; }
+.page.active { display: block; animation: pgIn .2s ease; }
+@keyframes pgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.page-hd { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+.page-title { font-size: 1.25rem; font-weight: 800; color: var(--text); letter-spacing: -.02em; }
+.page-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+/* ── BUTTONS ── */
+.btn {
+  padding: 8px 16px; border-radius: var(--rs);
+  font-size: 12.5px; font-weight: 700; cursor: pointer;
+  transition: all .15s; border: 1px solid var(--border2);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-red   { background: var(--red);   color: #fff; border-color: var(--red); }
+.btn-red:hover { opacity: .88; }
+.btn-blue  { background: var(--blue);  color: #fff; border-color: var(--blue); }
+.btn-blue:hover { opacity: .88; }
+.btn-green { background: var(--green); color: #fff; border-color: var(--green); }
+.btn-green:hover { opacity: .88; }
+.btn-ghost { background: var(--card);  color: var(--text2); }
+.btn-ghost:hover { background: var(--card2); }
+.btn-amber { background: var(--amber); color: #fff; border-color: var(--amber); }
+
+/* ── STATS ROW ── */
+.stats-row { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 1.5rem; }
+.stat {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--rs); padding: .9rem 1rem;
+  cursor: pointer; transition: all .18s; position: relative; overflow: hidden;
+}
+.stat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.stat.c-red::before   { background: var(--red); }
+.stat.c-amber::before { background: var(--amber); }
+.stat.c-blue::before  { background: var(--blue); }
+.stat.c-green::before { background: var(--green); }
+.stat.c-grey::before  { background: var(--grey); }
+.stat:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); border-color: var(--border2); }
+.stat-val { font-size: 1.75rem; font-weight: 800; line-height: 1; margin-bottom: 4px; letter-spacing: -.03em; }
+.stat-lbl { font-size: 10.5px; color: var(--text3); font-weight: 500; }
+.stat-arrow { position: absolute; bottom: 8px; right: 10px; font-size: 9px; color: var(--text3); opacity: 0; transition: opacity .15s; font-family: 'JetBrains Mono', monospace; }
+.stat:hover .stat-arrow { opacity: 1; }
+
+/* ── STATUS BADGES ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; padding: 3px 9px;
+  border-radius: 99px; font-weight: 600;
+}
+.badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.bg-green { background: var(--green-bg); color: #4ade80; border: 1px solid var(--green-mid); }
+.bg-green::before { background: #4ade80; }
+.bg-amber { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-mid); }
+.bg-amber::before { background: var(--amber); }
+.bg-red   { background: var(--red-bg);   color: var(--red);   border: 1px solid var(--red-mid); }
+.bg-red::before   { background: var(--red); }
+.bg-blue  { background: var(--blue-bg);  color: var(--blue);  border: 1px solid var(--blue-mid); }
+.bg-blue::before  { background: var(--blue); }
+
+/* ── TABLE ── */
+.tbl-wrap {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden;
+}
+.tbl-bar {
+  padding: .85rem 1.1rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.srch {
+  padding: 7px 10px 7px 28px;
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 7px; font-size: 12.5px; color: var(--text);
+  outline: none; transition: border-color .2s; min-width: 220px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%235a7285' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: 9px center;
+}
+.srch:focus { border-color: var(--blue); background-color: var(--card2); }
+.srch::placeholder { color: var(--text3); }
+.fsel {
+  padding: 7px 10px;
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 7px; font-size: 12.5px; color: var(--text); outline: none;
+}
+.fsel option { background: var(--navy2); }
+table { width: 100%; border-collapse: collapse; }
+th {
+  padding: 9px 12px; text-align: left;
+  font-size: 9.5px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  background: var(--panel); white-space: nowrap;
+  font-family: 'JetBrains Mono', monospace;
+}
+td {
+  padding: 10px 12px; font-size: 12.5px;
+  border-bottom: 1px solid var(--border); vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+.emp-name { font-weight: 700; color: var(--text); cursor: pointer; }
+.emp-name:hover { color: var(--blue); }
+.emp-id { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 1px; }
+.team-tag {
+  font-size: 10.5px; padding: 2px 7px; border-radius: 4px;
+  background: var(--card2); color: var(--text2); font-weight: 500; white-space: nowrap;
+}
+.skill-tag {
+  font-size: 10px; padding: 1px 6px; border-radius: 3px;
+  background: var(--blue-bg); color: var(--blue);
+  font-family: 'JetBrains Mono', monospace; border: 1px solid var(--blue-mid);
+  display: inline-block; margin: 1px;
+}
+.tenure-val { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); }
+.act-btns { display: flex; gap: 5px; }
+.ab {
+  padding: 3px 9px; border-radius: 5px; font-size: 10.5px;
+  font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all .14s;
+}
+.ab-view  { background: var(--grey-bg); color: var(--grey); border-color: rgba(143,163,177,0.2); }
+.ab-view:hover { background: rgba(143,163,177,0.2); }
+.ab-edit  { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-mid); }
+.ab-edit:hover { background: var(--blue-mid); }
+.ab-del   { background: var(--red-bg);  color: var(--red);  border-color: var(--red-mid); }
+.ab-del:hover  { background: var(--red-mid); }
+
+/* ── MODAL ── */
+.mo { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 100; align-items: flex-start; justify-content: center; padding: 2rem; overflow-y: auto; }
+.mo.open { display: flex; }
+.modal { background: var(--panel); border: 1px solid var(--border2); border-radius: 16px; width: 100%; max-width: 680px; margin: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.mo-hd { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.mo-title { font-size: 1rem; font-weight: 800; color: var(--text); }
+.mo-close { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--text3); }
+.mo-close:hover { color: var(--text); }
+.mo-body { padding: 1.5rem; }
+.mo-ft { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+.fg { margin-bottom: 1rem; }
+.fg label { font-size: 10.5px; font-weight: 600; color: var(--text3); letter-spacing: .08em; text-transform: uppercase; display: block; margin-bottom: 5px; font-family: 'JetBrains Mono', monospace; }
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.fgrid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+.ffull { grid-column: 1 / -1; }
+.fsec {
+  font-size: 9.5px; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--text3);
+  margin: 1.25rem 0 .75rem; padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+}
+.fsec span { color: var(--amber); margin-right: 4px; }
+
+/* ── DASH CARDS ── */
+.dash-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 1.5rem; }
+.dc {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 1.25rem;
+}
+.dc-title {
+  font-size: 10px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--text3);
+  margin-bottom: 1.1rem; font-family: 'JetBrains Mono', monospace;
+  display: flex; align-items: center; gap: 6px;
+}
+.dc-title::before { content: ''; width: 3px; height: 14px; background: var(--red); border-radius: 2px; display: inline-block; }
+.bar-row { margin-bottom: 10px; }
+.bar-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); margin-bottom: 4px; font-weight: 500; }
+.bar-track { height: 7px; background: var(--card); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width .7s ease; }
+.leg-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+.leg-row:last-child { border-bottom: none; }
+.leg-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.leg-val { margin-left: auto; font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.alert-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 6px; margin-bottom: 6px;
+  font-size: 12px; cursor: pointer; transition: opacity .14s;
+}
+.alert-item:hover { opacity: .85; }
+.alert-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+
+/* ── PROFILE VIEW ── */
+.pf-header {
+  display: flex; align-items: center; gap: 1rem;
+  margin-bottom: 1.5rem; padding: 1.25rem;
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: var(--r);
+}
+.pf-av {
+  width: 54px; height: 54px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; font-weight: 800; flex-shrink: 0;
+}
+.pf-name { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+.pf-meta { font-size: 11.5px; color: var(--text3); margin-top: 3px; }
+.pf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
+.pfc { background: var(--card); border: 1px solid var(--border); border-radius: var(--rs); padding: 1rem; }
+.pfc-title { font-size: 9.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text3); margin-bottom: .85rem; font-family: 'JetBrains Mono', monospace; }
+.pf-field { display: flex; justify-content: space-between; align-items: flex-start; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; gap: 8px; }
+.pf-field:last-child { border-bottom: none; }
+.pf-lbl { color: var(--text3); flex-shrink: 0; }
+.pf-val { color: var(--text); font-weight: 500; text-align: right; }
+.skill-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+
+/* ── CONNECT ITEMS ── */
+.con-item { background: var(--card); border: 1px solid var(--border); border-radius: var(--rs); padding: 1rem; margin-bottom: 8px; display: flex; gap: 12px; border-left: 3px solid; }
+.con-done { border-left-color: var(--green); }
+.con-pending { border-left-color: var(--amber); }
+.con-overdue { border-left-color: var(--red); }
+.con-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 700; flex-shrink: 0; }
+.con-type { font-size: 13px; font-weight: 700; color: var(--text); }
+.con-date { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.con-notes { font-size: 12px; color: var(--text2); margin-top: 5px; line-height: 1.5; }
+
+/* ── UPLOAD ── */
+.upzone {
+  border: 2px dashed var(--border2); border-radius: 10px;
+  padding: 2.5rem 2rem; text-align: center;
+  cursor: pointer; transition: all .2s; margin-bottom: 1.25rem;
+}
+.upzone:hover, .upzone.drag { border-color: var(--blue); background: var(--blue-bg); }
+.upzone-icon { font-size: 2rem; margin-bottom: 8px; }
+.upzone-txt { font-size: 13px; color: var(--text2); font-weight: 600; }
+.upzone-hint { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+/* ── SKILLS PAGE ── */
+.skills-bu-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: .75rem; margin-top: 1.5rem;
+}
+.skills-bu-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.skills-bu-name { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; }
+.skills-fn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px,1fr)); gap: 10px; }
+.skills-fn-card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--rs); padding: 1rem;
+  border-top: 2px solid transparent; transition: border-color .18s;
+}
+.skills-fn-card:hover { border-color: var(--border2); }
+.sfn-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.sfn-leader { font-size: 11px; color: var(--text3); margin-bottom: 8px; }
+.sfn-sec { font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text3); margin-bottom: 4px; margin-top: 7px; font-family: 'JetBrains Mono', monospace; }
+.sfn-val { font-size: 11.5px; color: var(--text2); line-height: 1.5; }
+
+/* ── SETTINGS ── */
+.cred-row { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.cred-row:last-child { border-bottom: none; }
+.cred-role { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.cred-info { display: flex; gap: 16px; font-size: 11.5px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+.cred-info strong { color: var(--amber); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
+  padding: 10px 18px; border-radius: 8px;
+  font-size: 12.5px; font-weight: 600;
+  z-index: 200; opacity: 0; transition: opacity .3s;
+  pointer-events: none; max-width: 340px;
+}
+.toast.show { opacity: 1; }
+.toast-ok  { background: #15803d; color: #fff; }
+.toast-err { background: var(--red); color: #fff; }
+.toast-info{ background: var(--blue); color: #fff; }
+
+@media (max-width: 900px) {
+  .stats-row { grid-template-columns: repeat(2,1fr); }
+  .dash-grid { grid-template-columns: 1fr; }
+  .fgrid { grid-template-columns: 1fr; }
+  .pf-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+
+
+<!-- ══ SPLASH / AUTO-CONNECT ══ -->
+<div id="splashScreen" class="auth-screen" style="display:flex;flex-direction:column;align-items:center;gap:16px">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+    <div style="width:56px;height:56px;background:var(--red);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff">W</div>
+    <div style="font-size:1.4rem;font-weight:800;color:var(--text);letter-spacing:-.02em">WorkforceIQ</div>
+    <div style="font-size:12px;color:var(--text3)">Connecting to database...</div>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--red);animation:dot 1.2s ease-in-out infinite"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--amber);animation:dot 1.2s ease-in-out .2s infinite"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--blue);animation:dot 1.2s ease-in-out .4s infinite"></div>
+    </div>
+  </div>
+</div>
+<style>
+@keyframes dot { 0%,100%{transform:scale(.6);opacity:.4} 50%{transform:scale(1);opacity:1} }
+</style>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="loginScreen" class="auth-screen" style="display:none;animation:pgIn .3s ease">
+  <div class="auth-card" style="max-width:420px">
+    <div class="brand-logo" style="margin-bottom:4px">
+      <div class="brand-icon">W</div>
+      <div class="brand-name">WorkforceIQ</div>
+    </div>
+    <div class="brand-sub" style="margin-bottom:1.5rem">Select your role to continue</div>
+    <div class="role-tabs">
+      <div class="role-tab active" onclick="selRole('master',this)">
+        <div class="role-tab-icon">🔐</div>
+        <div class="role-tab-name">Master</div>
+        <div class="role-tab-desc">Full access</div>
+      </div>
+      <div class="role-tab" onclick="selRole('hr',this)">
+        <div class="role-tab-icon">👥</div>
+        <div class="role-tab-name">HR</div>
+        <div class="role-tab-desc">People & connects</div>
+      </div>
+      <div class="role-tab" onclick="selRole('manager',this)">
+        <div class="role-tab-icon">📊</div>
+        <div class="role-tab-name">Manager</div>
+        <div class="role-tab-desc">Team & skills</div>
+      </div>
+    </div>
+    <div class="fl"><label id="loginRoleLabel">Master — Username</label>
+      <input class="fi" id="loginUser" placeholder="Enter username"></div>
+    <div class="fl"><label>Password</label>
+      <input class="fi" id="loginPass" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="err-msg" id="loginErr">Invalid credentials. Please try again.</div>
+    <button class="btn-connect" onclick="doLogin()">Sign In</button>
+    <div class="hint-text">master/master123 · hr/hr123 · manager/mgr123</div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="appShell">
+  <nav class="topnav">
+    <div class="nav-brand">
+      <div class="nav-brand-icon">W</div>
+      <div class="nav-brand-name">Workforce<span>IQ</span></div>
+    </div>
+    <div class="nav-tabs" id="navTabs"></div>
+    <div class="nav-right">
+      <div class="user-chip" id="userChip"></div>
+      <button class="logout-btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </nav>
+
+  <div class="app-body">
+
+    <!-- DASHBOARD -->
+    <div class="page" id="pgDash">
+      <div class="page-hd">
+        <div><div class="page-title">Dashboard</div><div class="page-sub">Workforce overview & key metrics</div></div>
+        <div id="dashActs"></div>
+      </div>
+      <div class="stats-row" id="statsRow"></div>
+      <div class="dash-grid">
+        <div class="dc"><div class="dc-title">BU Distribution</div><div id="buChart"></div></div>
+        <div class="dc"><div class="dc-title">Alerts</div><div id="alertsList"></div></div>
+      </div>
+      <div class="dash-grid">
+        <div class="dc"><div class="dc-title">Project Status Overview</div><div id="statusChart"></div></div>
+        <div class="dc"><div class="dc-title">Connect Due This Week</div><div id="conDue"></div></div>
+      </div>
+    </div>
+
+    <!-- EMPLOYEES -->
+    <div class="page" id="pgEmp">
+      <div class="page-hd">
+        <div><div class="page-title" id="empPageTitle">Employees</div><div class="page-sub" id="empPageSub">All employee records</div></div>
+        <div id="empActs"></div>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-bar">
+          <input class="srch" id="empSrch" placeholder="Search name, ID, BU, skill, manager..." oninput="renderEmpTbl()">
+          <select class="fsel" id="fBU" onchange="renderEmpTbl()"><option value="">All BUs</option></select>
+          <select class="fsel" id="fSt" onchange="renderEmpTbl()">
+            <option value="">All Status</option>
+            <option value="green">🟢 Assigned</option>
+            <option value="amber">🟡 Waiting</option>
+            <option value="red">🔴 No Project</option>
+          </select>
+          <select class="fsel" id="fTen" onchange="renderEmpTbl()">
+            <option value="">All Tenure</option>
+            <option value="new">New (&lt;3m)</option>
+            <option value="mid">Mid (3-12m)</option>
+            <option value="sr">Senior (1y+)</option>
+          </select>
+        </div>
+        <div id="empTbl"></div>
+      </div>
+    </div>
+
+    <!-- CONNECTS -->
+    <div class="page" id="pgCon">
+      <div class="page-hd">
+        <div><div class="page-title">HR Connects</div><div class="page-sub">Post-joining · 30/60/90 day · Regular connects</div></div>
+        <button class="btn btn-green" onclick="openConModal()">+ Log Connect</button>
+      </div>
+      <div class="stats-row" id="conStats"></div>
+      <div class="tbl-wrap">
+        <div class="tbl-bar">
+          <input class="srch" id="conSrch" placeholder="Search employee name..." oninput="renderConTbl()">
+          <select class="fsel" id="fConType" onchange="renderConTbl()">
+            <option value="">All Types</option>
+            <option value="post-joining">Post Joining</option>
+            <option value="30-day">30 Day</option>
+            <option value="60-day">60 Day</option>
+            <option value="90-day">90 Day</option>
+            <option value="regular">Regular</option>
+          </select>
+          <select class="fsel" id="fConSt" onchange="renderConTbl()">
+            <option value="">All Status</option>
+            <option value="done">Completed</option>
+            <option value="pending">Pending</option>
+            <option value="overdue">Overdue</option>
+          </select>
+        </div>
+        <div id="conTbl"></div>
+      </div>
+    </div>
+
+    <!-- SKILLS -->
+    <div class="page" id="pgSkills">
+      <div class="page-hd">
+        <div><div class="page-title">Skill Mapping</div><div class="page-sub">BU-wise skill matrix from base file</div></div>
+        <input class="srch" id="skillSrch" placeholder="Search skill, function, leader..." oninput="renderSkills()" style="min-width:240px">
+      </div>
+      <div id="skillsContent"></div>
+    </div>
+
+    <!-- UPLOAD -->
+    <div class="page" id="pgUpload">
+      <div class="page-hd"><div><div class="page-title">Bulk Upload</div><div class="page-sub">Import employees from Excel or CSV in one shot</div></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="dc">
+          <div class="dc-title">Upload File</div>
+          <div class="upzone" id="upZone" onclick="document.getElementById('bulkFile').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+            <div class="upzone-icon">📂</div>
+            <div class="upzone-txt">Click to browse or drag & drop</div>
+            <div class="upzone-hint">.xlsx · .xls · .csv — columns auto-mapped</div>
+          </div>
+          <input type="file" id="bulkFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleBulkFile(event)">
+          <div id="upPreview"></div>
+          <button class="btn btn-amber" id="impBtn" style="display:none;width:100%;justify-content:center" onclick="doBulkImport()">⬆ Import Employees</button>
+        </div>
+        <div class="dc">
+          <div class="dc-title">Expected Columns</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:1rem;line-height:1.6">Column names are matched flexibly — partial matches work.</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px">
+            ${['Employee ID','Full Name','BU','Function','Domain','Manager','Date of Joining','Primary Skills','Secondary Skills','Project','Project Status','Skill Level','Experience Years','Location','Grade','Designation'].map(c=>`<span style="font-size:10.5px;padding:2px 8px;background:var(--card);border:1px solid var(--border2);border-radius:4px;color:var(--text2);font-family:'JetBrains Mono',monospace">${c}</span>`).join('')}
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:1rem;line-height:1.7">
+            <span style="color:var(--green)">●</span> Project Status: Green / Amber / Red<br>
+            <span style="color:var(--amber)">●</span> Skills: comma-separated values<br>
+            <span style="color:var(--blue)">●</span> Date: YYYY-MM-DD or DD/MM/YYYY
+          </div>
+        </div>
+      </div>
+      <div id="impLog" style="margin-top:14px"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="pgSettings">
+      <div class="page-hd"><div><div class="page-title">Settings</div><div class="page-sub">Credentials & database configuration</div></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="dc"><div class="dc-title">Login Credentials</div><div id="credList"></div></div>
+        <div class="dc"><div class="dc-title">Database Status</div><div id="dbStatus"></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ EMPLOYEE MODAL ══ -->
+<div class="mo" id="moEmp">
+  <div class="modal">
+    <div class="mo-hd"><div class="mo-title" id="moEmpTitle">Add Employee</div><button class="mo-close" onclick="closeMo('moEmp')">✕</button></div>
+    <div class="mo-body">
+      <div class="fsec"><span>01</span> Identity</div>
+      <div class="fgrid">
+        <div class="fg"><label>Employee ID *</label><input class="fi" id="fId" placeholder="EMP-001"></div>
+        <div class="fg"><label>Full Name *</label><input class="fi" id="fName" placeholder="Full name"></div>
+        <div class="fg"><label>Email</label><input class="fi" id="fEmail" type="email" placeholder="email@company.com"></div>
+        <div class="fg"><label>Phone</label><input class="fi" id="fPhone" placeholder="+91 xxxxx xxxxx"></div>
+        <div class="fg"><label>Date of Joining *</label><input class="fi" id="fDoj" type="date"></div>
+        <div class="fg"><label>Location</label><input class="fi" id="fLoc" placeholder="City, Country"></div>
+      </div>
+      <div class="fsec"><span>02</span> Organisation</div>
+      <div class="fgrid">
+        <div class="fg"><label>BU *</label>
+          <select class="fi" id="fBUm" onchange="updateFnDrop()">
+            <option value="">Select BU</option>
+            <option>SE</option><option>SDSI</option><option>SVT</option><option>NRM</option><option>R&D</option><option>Testing</option><option>IT</option>
+          </select></div>
+        <div class="fg"><label>Function *</label><select class="fi" id="fFn"><option value="">Select BU first</option></select></div>
+        <div class="fg"><label>Domain</label><input class="fi" id="fDom" placeholder="e.g. BSS, OSS, Cloud"></div>
+        <div class="fg"><label>Reporting Manager</label><input class="fi" id="fMgr" placeholder="Manager name"></div>
+        <div class="fg"><label>Designation</label><input class="fi" id="fDes" placeholder="e.g. Senior Engineer"></div>
+        <div class="fg"><label>Grade / Level</label><input class="fi" id="fGrd" placeholder="e.g. L3, L4"></div>
+      </div>
+      <div class="fsec"><span>03</span> Skills</div>
+      <div class="fgrid">
+        <div class="fg ffull"><label>Primary Skills (comma separated)</label><input class="fi" id="fSk1" placeholder="Java, Spring Boot, Docker, Kubernetes"></div>
+        <div class="fg ffull"><label>Secondary Skills</label><input class="fi" id="fSk2" placeholder="Python, Ansible, Grafana"></div>
+        <div class="fg"><label>Skill Level</label>
+          <select class="fi" id="fSkLv"><option>Beginner</option><option>Intermediate</option><option selected>Senior</option><option>Expert</option></select></div>
+        <div class="fg"><label>Years of Experience</label><input class="fi" id="fExp" type="number" min="0" placeholder="5"></div>
+      </div>
+      <div class="fsec"><span>04</span> Project Assignment</div>
+      <div class="fgrid">
+        <div class="fg"><label>Current Project</label><input class="fi" id="fPrj" placeholder="Project name or TBD"></div>
+        <div class="fg"><label>Project Status *</label>
+          <select class="fi" id="fSt2">
+            <option value="green">🟢 Green — Assigned</option>
+            <option value="amber" selected>🟡 Amber — Waiting</option>
+            <option value="red">🔴 Red — No Project</option>
+          </select></div>
+        <div class="fg"><label>Project Start</label><input class="fi" id="fPs" type="date"></div>
+        <div class="fg"><label>Expected Release</label><input class="fi" id="fPe" type="date"></div>
+        <div class="fg ffull"><label>Notes</label><textarea class="fi" id="fNt" rows="2" placeholder="Any additional notes..."></textarea></div>
+      </div>
+    </div>
+    <div class="mo-ft">
+      <button class="btn btn-ghost" onclick="closeMo('moEmp')">Cancel</button>
+      <button class="btn btn-blue" onclick="saveEmp()">Save Employee</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONNECT MODAL ══ -->
+<div class="mo" id="moCon">
+  <div class="modal" style="max-width:500px">
+    <div class="mo-hd"><div class="mo-title">Log HR Connect</div><button class="mo-close" onclick="closeMo('moCon')">✕</button></div>
+    <div class="mo-body">
+      <div class="fg"><label>Employee *</label><select class="fi" id="cEmp"><option value="">Select employee</option></select></div>
+      <div class="fgrid">
+        <div class="fg"><label>Connect Type *</label>
+          <select class="fi" id="cType">
+            <option value="post-joining">Post Joining Connect</option>
+            <option value="30-day">30 Day Connect</option>
+            <option value="60-day">60 Day Connect</option>
+            <option value="90-day">90 Day Connect</option>
+            <option value="regular">Regular Connect</option>
+          </select></div>
+        <div class="fg"><label>Date *</label><input class="fi" id="cDate" type="date"></div>
+        <div class="fg"><label>Status</label>
+          <select class="fi" id="cSt"><option value="done">Completed</option><option value="pending">Pending</option><option value="overdue">Overdue</option></select></div>
+        <div class="fg"><label>Conducted by (HR BP)</label><input class="fi" id="cHR" placeholder="HR name"></div>
+        <div class="fg ffull"><label>Notes / Summary</label><textarea class="fi" id="cNotes" rows="3" placeholder="Key discussion points, action items..."></textarea></div>
+        <div class="fg"><label>Next Connect Date</label><input class="fi" id="cNext" type="date"></div>
+        <div class="fg"><label>Follow-up Action</label><input class="fi" id="cAct" placeholder="e.g. Share feedback form"></div>
+      </div>
+    </div>
+    <div class="mo-ft">
+      <button class="btn btn-ghost" onclick="closeMo('moCon')">Cancel</button>
+      <button class="btn btn-green" onclick="saveCon()">Save Connect</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VIEW MODAL ══ -->
+<div class="mo" id="moView">
+  <div class="modal" style="max-width:740px">
+    <div class="mo-hd"><div class="mo-title" id="moViewTitle">Employee Profile</div><button class="mo-close" onclick="closeMo('moView')">✕</button></div>
+    <div class="mo-body" id="moViewBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════
+   BU / SKILL DATA FROM BASE FILE
+══════════════════════════════════════ */
+const BU_FNS = {
+  SE:['UI/UX SE','OE','CRM','Cloud BSS','INT/TBAPI','OPF','Product Catalog','Billing & Revenue Mgt','Migration','Core Platform','DevOps','Cloud OSS','Resource Inventory','DMP-Core Platform','ERP','RM Java','OCS','Others - Dot Net'],
+  SDSI:['Environment Admin (EA)','Cloud Support','DevOps','Monitoring Automation','DBA Team'],
+  SVT:['Tools','Programming & Scripting','Monitor & Data Analysis','Performance Testing'],
+  NRM:['Custom Integration','Migration','Mediation','Configuration','Rating & Billing'],
+  'R&D':['RBM R&D','RBM ICE L3','Blueprint E2E','OCS ICE L3'],
+  Testing:['Functional (Manual)','Automation'],
+  IT:['Cloud Support & Dev','CI/VCS Support','IT Application Mgmt','IT Cyber Resilience','IT Helpdesk','IT Infra (SAN Storage)','IT Infra PM','IT Portal Solutions','Monitoring Group','Linux & Unix OS','Network Dev & Support']
+};
+
+const SKILL_DATA = {
+  SE:{
+    'UI/UX SE':{leader:'Sunitha Kanapala',lang:'Angular2+, ReactJs, JavaScript, TypeScript, HTML, CSS, React.JS, Redux, React Native, ES6+, GraphQL',db:'MongoDB, PostgreSQL, MySQL',cloud:'AWS/Azure/GCP',other:'Jenkins, Maven, SonarQube, Microfrontend, Java'},
+    'OE':{leader:'Bhagrav',lang:'Java, Spring, RESTful Webservices',db:'PL/SQL',cloud:'',other:''},
+    'CRM':{leader:'Venkata J',lang:'Java, Spring, RESTful Webservices, Springboot, Microservices',db:'PL/SQL',cloud:'AWS/Azure/GCP',other:'Design Patterns, REST, CI/CD, Domain experience in CRM'},
+    'Cloud BSS':{leader:'Palanisamy Vishnu',lang:'Core Java/J2EE, Spring/Spring Data/Spring Boot/REST, Microservices, Docker, Kubernetes, Jenkins/Maven/SonarQube',db:'SQL (Oracle/PostgreSQL)',cloud:'AWS/Azure/GCP',other:'NOSQL (Cassandra/MongoDB), Kafka'},
+    'INT/TBAPI':{leader:'Dhanashri Kate / Alexander Shcherbakov',lang:'Java, Webservices, Microservices, Spring',db:'Oracle, MySQL',cloud:'AWS/Azure/GCP',other:'API, CI/CD, Kafka/RabbitMQ, Apache, Kubernetes/Docker'},
+    'OPF':{leader:'Ihar Dubkou',lang:'Java 7/8, J2EE, EJB, Servlets, JSP, JDBC, LOG4J, JSON, XML, Springboot, Spring REST, Spring MVC',db:'SQL (Oracle/PostgreSQL)',cloud:'',other:'SOAP/REST, Microservice Development'},
+    'Product Catalog':{leader:'—',lang:'PL/SQL, Java, Data Migration',db:'MySQL/PostgreSQL/Oracle',cloud:'AWS/Azure/GCP',other:'Telecom experience (must), Product Support'},
+    'Billing & Revenue Mgt':{leader:'—',lang:'C++',db:'MongoDB/PostgreSQL/MySQL/Oracle',cloud:'',other:'Unix Shell, Perl, PL/SQL Scripting'},
+    'Migration':{leader:'Nitesh Hatwar',lang:'PL/SQL — Procedures, Functions, Triggers, Query Writing',db:'Oracle, Performance Tuning, Indexes',cloud:'',other:'Database Migration Logic, BSS/OSS Migration'},
+    'Core Platform':{leader:'Alexander Bobrov / Denis Melnikov',lang:'Java, Spring Security, Microservice, OOPS, Data Structures, Kafka, Docker, Kubernetes',db:'MongoDB, PostgreSQL, MySQL',cloud:'AWS/Azure/GCP',other:'Golang (Good to have)'},
+    'DevOps':{leader:'Bijoyendra Ratan Kundu',lang:'Jenkins, Github, Gitlab, Maven, Docker, Kubernetes',db:'MongoDB, PostgreSQL, MySQL',cloud:'AWS/Azure/GCP',other:'Prometheus, Grafana, SonarQube'},
+    'Cloud OSS':{leader:'Sergii Kutovoi',lang:'Core Java, Spring Boot, Microservice, Docker, Kubernetes',db:'MongoDB, PostgreSQL, MySQL',cloud:'AWS/Azure/GCP',other:'Golang (Good to have)'},
+    'Resource Inventory':{leader:'Andrei A Gavrilov',lang:'Java, SQL, PL/SQL',db:'Oracle PL/SQL, SQL',cloud:'',other:'Maven, SVN'},
+    'DMP-Core Platform':{leader:'—',lang:'Core Java, Microservice, Spring Security, Kafka, Docker, Kubernetes',db:'MySQL/PostgreSQL/Oracle',cloud:'AWS/Azure/GCP',other:'Cloud Experience (Good to Have)'},
+    'ERP':{leader:'—',lang:'Java 8, Spring Boot, REST APIs, SOAP',db:'Oracle SQL / PostgreSQL',cloud:'',other:'JavaScript (good to have)'},
+    'RM Java':{leader:'Mikhail Shishalov',lang:'Core Java (SE/EE), Web Services, JMS, JDBC, Hibernate, Spring Frameworks, Spring Boot, XML/XSLT, JAXB, UML, Linux',db:'SQL, PostgreSQL',cloud:'',other:'NoSQL/Graph DB, GO, Python, Kafka, HTML, CSS, JS'},
+    'OCS':{leader:'Mikhail Shishalov',lang:'Core Java (SE/EE), Web Services, JMS, JDBC, Hibernate, Spring Frameworks, Spring Boot, XML/XSLT, JAXB, UML, Linux',db:'',cloud:'',other:''},
+    'Others - Dot Net':{leader:'—',lang:'C#, CSS, HTML, JavaScript, jQuery',db:'SQL',cloud:'',other:''},
+  },
+  SDSI:{
+    'Environment Admin (EA)':{leader:'Hanu Pullammagari / Manu Mishra',lang:'Weblogic, WebSphere, Shell Scripting, Linux/Unix, Troubleshooting',db:'Oracle DB, SQL',cloud:'AWS, Azure, GCP, Oracle Cloud',other:'JBoss, Cloud CI/CD'},
+    'Cloud Support':{leader:'Danmal Jain',lang:'Kubernetes, Docker, Jenkins, OpenShift, Ansible/Groovy/Bash, Linux',db:'SQL, PostgreSQL, Cassandra',cloud:'AWS, Azure, GCP, Oracle Cloud',other:'SAAS, PAAS, Grafana, Prometheus, PromQL, ELK'},
+    'DevOps':{leader:'—',lang:'Ansible, CICD Pipeline, Linux, Kubernetes, Docker',db:'SQL, PostgreSQL, Cassandra',cloud:'AWS, Azure, GCP, Oracle Cloud',other:'Weblogic, JBoss, WildFly, Tomcat'},
+    'Monitoring Automation':{leader:'Gaurav Y Sharma',lang:'Python, Golang, Ansible, Linux, T-SQL, Docker, Kubernetes, OpenShift',db:'Oracle, PostgreSQL, NoSQL',cloud:'AWS, Azure, GCP, Oracle Cloud',other:'Icinga, Prometheus, Zabbix, Nagios, AppDynamics, Dynatrace'},
+    'DBA Team':{leader:'Shailesh Satish Bhimgare',lang:'Oracle DBA, Linux/UNIX, Shell Scripting, Ansible',db:'Oracle DB, Cassandra DBA, PostgreSQL',cloud:'Linux, AWS, Azure, GCP, Oracle Cloud',other:'Cassandra, CICD, CouchBase, Amazon Aurora, Networking, Weblogic/JBOSS'},
+  },
+  SVT:{
+    'Tools':{leader:'—',lang:'Apache, JMeter, Load Runner',db:'Oracle, PostgreSQL, Cassandra',cloud:'Kubernetes & Docker',other:''},
+    'Programming & Scripting':{leader:'Pradip Awhad / Omkar Kulkarni',lang:'Python, Java, Shell Scripting, Pearl',db:'',cloud:'AWS/GCP/Azure',other:''},
+    'Monitor & Data Analysis':{leader:'Manish Chandra / Deepak Kumar Patel',lang:'Grafana',db:'',cloud:'',other:''},
+    'Performance Testing':{leader:'Naganna Danduboyana',lang:'Performance Testing expertise',db:'',cloud:'',other:''},
+  },
+  NRM:{
+    'Custom Integration':{leader:'Bandi Srinivas Rao / Vijay Ashok Gurav',lang:'C++, PL/SQL, Telecom BSS',db:'PL/SQL, PostgreSQL',cloud:'',other:'Java'},
+    'Migration':{leader:'Sanjeev Sharma / Ashish Deb',lang:'PL/SQL, BSS Migration, Scripting',db:'Oracle/PostgreSQL',cloud:'',other:''},
+    'Mediation':{leader:'Satyajit Mohanthy / Ashish Deb',lang:'Java, Telecom BSS, Mediation',db:'PL/SQL, PostgreSQL',cloud:'',other:''},
+    'Configuration':{leader:'Phani Suman Somayajula / Ashish Deb',lang:'PL/SQL, BSS Configuration',db:'PL/SQL, PostgreSQL',cloud:'',other:''},
+    'Rating & Billing':{leader:'—',lang:'PL/SQL, C, C++',db:'',cloud:'',other:''},
+  },
+  'R&D':{
+    'RBM R&D':{leader:'Viswanath Nandanavanam / Ravi Kiran Samayamantry',lang:'C, C++, Scripting Languages, Data Structures, Algorithms',db:'Any DB',cloud:'',other:'Telecom BSS Knowledge'},
+    'RBM ICE L3':{leader:'Rao Venkata / Aezaz Mohammad Kareem',lang:'Java, Core Java, J2EE, Spring Boot, C, C++, Pro C, Scripting',db:'Oracle/PL/SQL',cloud:'',other:'Strong Problem Solving Skills'},
+    'Blueprint E2E':{leader:'Pushpakraj Mehta',lang:'BA Roles — Telecom BSS & OSS',db:'',cloud:'',other:''},
+    'OCS ICE L3':{leader:'Rao Venkata / Venkat Ramana Reddy',lang:'Java, Core Java, J2EE, Spring Boot, Scripting',db:'Oracle/PL/SQL',cloud:'',other:'Problem Solving Skills'},
+  },
+  Testing:{
+    'Functional (Manual)':{leader:'Kshitij Vinod Sutawane',lang:'Manual Testing, Telecom BSS (Billing)',db:'PL/SQL',cloud:'UNIX',other:'Test Case Design, Execution, Stakeholder Management'},
+    'Automation':{leader:'Alexander Shirobokov',lang:'Java, Selenium, Cucumber BDD, TestNG, Playwright, SQL, API Testing',db:'',cloud:'',other:'Test Automation Strategy, QA Methodology, Bug Management'},
+  },
+  IT:{
+    'Cloud Support & Dev':{leader:'Sunny Biswas / Prasanna Ramesh',lang:'Shell/Bash, OpenStack Admin, Linux Administration, Containerization',db:'Basic knowledge',cloud:'OpenStack, AWS',other:'Ansible, Docker, Networking'},
+    'CI/VCS Support':{leader:'Purusothaman Raghu',lang:'Shell Script, Python, Java',db:'',cloud:'HyperV',other:'Jenkins, GitLab, GIT, Artifactory, Nexus, Linux Admin, Apache, Tomcat'},
+    'IT Application Mgmt':{leader:'Gangasani BalaKrishna Reddy',lang:'Java, Groovy, React, Spring',db:'MySQL',cloud:'AWS',other:'Linux, PostgreSQL, Automations'},
+    'IT Cyber Resilience':{leader:'Arwin Prakash Fernandis / Suvajit',lang:'Vulnerability Management, SIEM Tools, DLP, EDR, WAF',db:'',cloud:'On-premise, AWS, Azure, Cloud Security',other:'Elastic, Kibana, Citrix, Nessus, Orca, CISA'},
+    'IT Helpdesk':{leader:'Neelesh Sachania',lang:'',db:'',cloud:'',other:'Desktop L1/L2, Software Installations, Hardware Troubleshooting, JIRA, ServiceNow, Active Directory, Networking'},
+    'IT Infra (SAN Storage)':{leader:'Pravyn Pattaraju',lang:'Shell, Python',db:'',cloud:'AWS/Azure/GCP (Beginner)',other:'SAN Protocols, NVMe/SCSI/FC/NFS, Storage Virtualization, Grafana, Icinga, Pure, NetApp, Brocade'},
+    'IT Infra PM':{leader:'Ajay Kumar N / Sri / Yuri',lang:'Terraform, Ansible, Chef, SQL, Python',db:'PostgreSQL, Oracle, AWS-DB',cloud:'AWS, GCP, Azure, Oracle',other:'Networking, Linux, Storage, Security, Project Management'},
+    'IT Portal Solutions':{leader:'Vikas Jain / Gangasani Bala',lang:'Java, Groovy, React, Spring',db:'MySQL',cloud:'AWS',other:'JIRA, Confluence, GitHub, Jenkins, Atlassian'},
+    'Monitoring Group':{leader:'Randeep P R',lang:'Python, GoLang, Bash',db:'ClickHouse, MariaDB, PostgreSQL, MongoDB',cloud:'AWS, Azure',other:'Linux, Icinga, Nagios, Grafana, Graylog, Elasticsearch, Ansible, Prometheus, Podman, Docker'},
+    'Linux & Unix OS':{leader:'Aljo Antony',lang:'Shell, Python, Bash',db:'MySQL, PostgreSQL',cloud:'OpenStack',other:'LVM, RAID, Kernel Tuning, Clustering, JIRA'},
+    'Network Dev & Support':{leader:'Srivathsa V',lang:'Shell, Python',db:'',cloud:'OpenStack, AWS, Azure, Shakti Cloud',other:'Linux, VMware, Grafana, Routing, Switching, Security, Load Balancing'},
+  }
+};
+
+const BU_COLORS = {SE:'#4a8fc1',SDSI:'#27ae60',SVT:'#8e44ad',NRM:'#f5a623',
+  'R&D':'#e63950','Testing':'#16a085',IT:'#8fa3b1'};
+
+const SCHEMA_SQL = `-- Run once in Supabase > SQL Editor > New Query > Run
+CREATE TABLE IF NOT EXISTS employees (
+  id TEXT PRIMARY KEY, emp_id TEXT, name TEXT,
+  email TEXT, phone TEXT, doj TEXT, location TEXT,
+  bu TEXT, function_name TEXT, domain TEXT,
+  manager TEXT, designation TEXT, grade TEXT,
+  skills TEXT, skills2 TEXT, skill_level TEXT,
+  exp_years INT DEFAULT 0, project TEXT,
+  status TEXT DEFAULT 'amber',
+  proj_start TEXT, proj_end TEXT, notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS connects (
+  id TEXT PRIMARY KEY, emp_id TEXT, emp_name TEXT,
+  type TEXT, connect_date TEXT, status TEXT DEFAULT 'pending',
+  hr_name TEXT, notes TEXT, next_date TEXT, action TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
+ALTER TABLE connects ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "allow_all_emp" ON employees;
+DROP POLICY IF EXISTS "allow_all_con" ON connects;
+CREATE POLICY "allow_all_emp" ON employees FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "allow_all_con" ON connects FOR ALL USING (true) WITH CHECK (true);`;
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let DB=null, USE_LOCAL=false, curRole='master', curUser='';
+let employees=[], connects=[], editEmpId=null, pendingImport=[];
+
+const CREDS = {
+  master:{u:'master',p:'master123',label:'Master Admin'},
+  hr:    {u:'hr',    p:'hr123',    label:'HR Manager'},
+  manager:{u:'manager',p:'mgr123',label:'Team Manager'},
+};
+
+/* ══════════════════════════════════════
+   SUPABASE CONNECTION
+══════════════════════════════════════ */
+/* Auto-connect: credentials hardcoded */
+const SB_URL = 'https://zwxlqergspcuvdmpwqbt.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3eGxxZXJnc3BjdXZkbXB3cWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1NDMzNTksImV4cCI6MjA2MjExOTM1OX0.Ljm8GqPJ5cqBCMz5fgjPqoJYgL3HpBt_i6JJM39rEMc';
+
+async function autoConnect(){
+  const splash = document.getElementById('splashScreen');
+  try {
+    DB = window.supabase.createClient(SB_URL, SB_KEY);
+    const {data, error} = await DB.from('employees').select('id').limit(1);
+    if(error && (error.code==='42P01' || error.message.includes('does not exist'))){
+      // Tables missing — show SQL hint on login screen
+      USE_LOCAL = false;
+      await loadData();
+      showLogin();
+      setTimeout(()=>showToast('Run the SQL schema in Supabase SQL Editor first (see Settings)','info'), 1000);
+    } else if(error){
+      throw error;
+    } else {
+      USE_LOCAL = false;
+      await loadData();
+      showLogin();
+    }
+  } catch(e){
+    // Fallback to local if network unavailable
+    USE_LOCAL = true;
+    loadLocalData();
+    showLogin();
+    showToast('Offline — using local mode','info');
+  } finally {
+    if(splash) splash.style.display = 'none';
+  }
+}
+
+function showLogin(){
+  document.getElementById('loginScreen').style.display='flex';
+}
+
+/* ══════════════════════════════════════
+   DATA LAYER — Supabase OR localStorage
+══════════════════════════════════════ */
+async function loadData(){
+  if(USE_LOCAL){loadLocalData();return}
+  try{
+    const [r1,r2]=await Promise.all([
+      DB.from('employees').select('*').order('created_at',{ascending:false}),
+      DB.from('connects').select('*').order('created_at',{ascending:false}),
+    ]);
+    if(r1.error)throw r1.error;
+    if(r2.error)throw r2.error;
+    employees=r1.data||[]; connects=r2.data||[];
+  }catch(e){loadLocalData();showToast('DB error — using local cache','err')}
+}
+
+async function saveEmpDB(emp){
+  if(USE_LOCAL){upsertLocal('emp',emp);return emp}
+  try{
+    const {error}=await DB.from('employees').upsert(emp,{onConflict:'id'});
+    if(error)throw error;
+    await loadData();
+  }catch(e){upsertLocal('emp',emp);showToast('Saved locally (DB: '+e.message+')','err')}
+  return emp;
+}
+
+async function delEmpDB(id){
+  if(USE_LOCAL){employees=employees.filter(e=>e.id!==id);connects=connects.filter(c=>c.emp_id!==id);saveLocal();return}
+  try{await Promise.all([DB.from('employees').delete().eq('id',id),DB.from('connects').delete().eq('emp_id',id)]);await loadData()}
+  catch(e){employees=employees.filter(e=>e.id!==id);connects=connects.filter(c=>c.emp_id!==id);saveLocal()}
+}
+
+async function saveConDB(con){
+  if(USE_LOCAL){upsertLocal('con',con);return}
+  try{const {error}=await DB.from('connects').upsert(con,{onConflict:'id'});if(error)throw error;await loadData()}
+  catch(e){upsertLocal('con',con)}
+}
+
+async function delConDB(id){
+  if(USE_LOCAL){connects=connects.filter(c=>c.id!==id);saveLocal();return}
+  try{await DB.from('connects').delete().eq('id',id);await loadData()}
+  catch(e){connects=connects.filter(c=>c.id!==id);saveLocal()}
+}
+
+function upsertLocal(type,obj){
+  if(type==='emp'){const i=employees.findIndex(e=>e.id===obj.id);if(i>=0)employees[i]=obj;else employees.unshift(obj)}
+  else{const i=connects.findIndex(c=>c.id===obj.id);if(i>=0)connects[i]=obj;else connects.unshift(obj)}
+  saveLocal();
+}
+function saveLocal(){localStorage.setItem('wiq_emp',JSON.stringify(employees));localStorage.setItem('wiq_con',JSON.stringify(connects))}
+function loadLocalData(){
+  try{employees=JSON.parse(localStorage.getItem('wiq_emp')||'[]')}catch{employees=[]}
+  try{connects=JSON.parse(localStorage.getItem('wiq_con')||'[]')}catch{connects=[]}
+  if(!employees.length)seedDemo();
+}
+
+function seedDemo(){
+  employees=[
+    {id:'EMP-001',emp_id:'EMP-001',name:'Arjun Sharma',email:'arjun@co.com',phone:'+91 98765 43210',doj:'2022-03-15',bu:'SE',function_name:'Core Platform',domain:'BSS',manager:'Alexander Bobrov',designation:'Senior Engineer',grade:'L4',skills:'Java,Spring Security,Kafka,Docker,Kubernetes',skills2:'Golang',skill_level:'Senior',exp_years:6,project:'Cloud BSS Migration',status:'green',proj_start:'2024-01-01',proj_end:'2024-12-31',location:'Bangalore',notes:'High performer',created_at:new Date().toISOString()},
+    {id:'EMP-002',emp_id:'EMP-002',name:'Priya Nair',email:'priya@co.com',phone:'+91 87654 32109',doj:'2024-01-10',bu:'SE',function_name:'UI/UX SE',domain:'Frontend',manager:'Sunitha Kanapala',designation:'Engineer',grade:'L3',skills:'ReactJs,TypeScript,JavaScript,HTML,CSS',skills2:'Redux,GraphQL',skill_level:'Intermediate',exp_years:3,project:'',status:'amber',proj_start:'',proj_end:'',location:'Hyderabad',notes:'Recently onboarded',created_at:new Date().toISOString()},
+    {id:'EMP-003',emp_id:'EMP-003',name:'Karthik Rajan',email:'karthik@co.com',phone:'+91 76543 21098',doj:'2023-07-20',bu:'NRM',function_name:'Migration',domain:'OSS',manager:'Sanjeev Sharma',designation:'Lead Engineer',grade:'L5',skills:'PL/SQL,Oracle,Triggers,Functions',skills2:'BSS Migration',skill_level:'Expert',exp_years:8,project:'',status:'red',proj_start:'',proj_end:'',location:'Chennai',notes:'Available for new assignment',created_at:new Date().toISOString()},
+    {id:'EMP-004',emp_id:'EMP-004',name:'Divya Menon',email:'divya@co.com',phone:'+91 65432 10987',doj:'2024-02-01',bu:'SDSI',function_name:'Cloud Support',domain:'Cloud',manager:'Danmal Jain',designation:'Cloud Engineer',grade:'L3',skills:'Kubernetes,Docker,Jenkins,Ansible',skills2:'Grafana,Prometheus',skill_level:'Intermediate',exp_years:2,project:'Etisalat Cloud',status:'green',proj_start:'2024-02-01',proj_end:'2025-01-31',location:'Mumbai',notes:'',created_at:new Date().toISOString()},
+    {id:'EMP-005',emp_id:'EMP-005',name:'Suresh Kumar',email:'suresh@co.com',phone:'+91 54321 09876',doj:'2021-05-12',bu:'SE',function_name:'INT/TBAPI',domain:'Integration',manager:'Dhanashri Kate',designation:'Senior Engineer',grade:'L4',skills:'Java,Webservices,Spring,Kafka',skills2:'API,RabbitMQ',skill_level:'Senior',exp_years:7,project:'O2UK BSS',status:'green',proj_start:'2023-06-01',proj_end:'2025-06-30',location:'Pune',notes:'',created_at:new Date().toISOString()},
+    {id:'EMP-006',emp_id:'EMP-006',name:'Lakshmi Prasad',email:'lakshmi@co.com',phone:'+91 43210 98765',doj:'2024-03-15',bu:'SE',function_name:'Billing & Revenue Mgt',domain:'Billing',manager:'',designation:'Engineer',grade:'L3',skills:'C++,MongoDB,PostgreSQL',skills2:'PL/SQL Scripting,Unix Shell',skill_level:'Intermediate',exp_years:2,project:'',status:'amber',proj_start:'',proj_end:'',location:'Bangalore',notes:'New joiner',created_at:new Date().toISOString()},
+    {id:'EMP-007',emp_id:'EMP-007',name:'Anil Verma',email:'anil@co.com',phone:'+91 32109 87654',doj:'2020-08-01',bu:'SDSI',function_name:'DevOps',domain:'DevOps',manager:'',designation:'Lead DevOps',grade:'L5',skills:'Jenkins,Docker,Kubernetes,Grafana,Prometheus',skills2:'SonarQube,Maven',skill_level:'Expert',exp_years:9,project:'Nu Day All Cloud',status:'green',proj_start:'2023-01-01',proj_end:'2025-12-31',location:'Hyderabad',notes:'',created_at:new Date().toISOString()},
+  ];
+  connects=[
+    {id:'CON-001',emp_id:'EMP-002',emp_name:'Priya Nair',type:'post-joining',connect_date:'2024-01-20',status:'done',hr_name:'Meena HR',notes:'Smooth onboarding. Assigned to UI/UX team.',next_date:'2024-02-10',action:'Share training resources',created_at:new Date().toISOString()},
+    {id:'CON-002',emp_id:'EMP-002',emp_name:'Priya Nair',type:'30-day',connect_date:'2024-02-10',status:'done',hr_name:'Meena HR',notes:'Settling well. Needs project assignment.',next_date:'2024-03-10',action:'Follow up on project',created_at:new Date().toISOString()},
+    {id:'CON-003',emp_id:'EMP-006',emp_name:'Lakshmi Prasad',type:'post-joining',connect_date:'',status:'pending',hr_name:'',notes:'',next_date:'',action:'',created_at:new Date().toISOString()},
+    {id:'CON-004',emp_id:'EMP-003',emp_name:'Karthik Rajan',type:'regular',connect_date:'2024-01-15',status:'done',hr_name:'Meena HR',notes:'No project for 2 months. Candidate concerned.',next_date:'2024-02-15',action:'Discuss redeployment',created_at:new Date().toISOString()},
+  ];
+  saveLocal();
+}
+
+/* ══════════════════════════════════════
+   AUTH
+══════════════════════════════════════ */
+let selRole='master';
+function selRole2(r,el){
+  selRole=r;
+  document.querySelectorAll('.role-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('loginRoleLabel').textContent={master:'Master — Username',hr:'HR — Username',manager:'Manager — Username'}[r];
+}
+// Fix: rename to avoid conflict
+function selRole(r,el){selRole2(r,el)}
+
+function doLogin(){
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value.trim();
+  const c=CREDS[selRole];
+  document.getElementById('loginErr').style.display='none';
+  if(u===c.u&&p===c.p){
+    curRole=selRole; curUser=c.label;
+    document.getElementById('loginScreen').style.display='none';
+    loadData().then(initApp);
+  } else {
+    document.getElementById('loginErr').style.display='block';
+  }
+}
+function doLogout(){
+  document.getElementById('appShell').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+}
+
+/* ══════════════════════════════════════
+   APP INIT
+══════════════════════════════════════ */
+function initApp(){
+  document.getElementById('appShell').style.display='flex';
+  document.getElementById('userChip').textContent=curUser+(USE_LOCAL?' · Local':' · Supabase');
+  buildNav(); showPage('pgDash');
+}
+
+const NAV={
+  master:[{id:'pgDash',l:'Dashboard'},{id:'pgEmp',l:'Employees'},{id:'pgCon',l:'HR Connects'},{id:'pgSkills',l:'Skill Mapping'},{id:'pgUpload',l:'Bulk Upload'},{id:'pgSettings',l:'Settings'}],
+  hr:    [{id:'pgDash',l:'Dashboard'},{id:'pgEmp',l:'Employees'},{id:'pgCon',l:'HR Connects'},{id:'pgSkills',l:'Skill Mapping'}],
+  manager:[{id:'pgDash',l:'Dashboard'},{id:'pgEmp',l:'My Team'},{id:'pgSkills',l:'Skill Mapping'}],
+};
+function buildNav(){
+  document.getElementById('navTabs').innerHTML=NAV[curRole].map(n=>
+    `<button class="nav-tab" id="nav_${n.id}" onclick="showPage('${n.id}')">${n.l}</button>`
+  ).join('');
+}
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  const pg=document.getElementById(id); if(pg)pg.classList.add('active');
+  const tb=document.getElementById('nav_'+id); if(tb)tb.classList.add('active');
+  if(id==='pgDash')    renderDash();
+  else if(id==='pgEmp')     renderEmpPage();
+  else if(id==='pgCon')     renderConPage();
+  else if(id==='pgSkills')  renderSkills();
+  else if(id==='pgSettings')renderSettings();
+}
+
+/* ══════════════════════════════════════
+   HELPERS
+══════════════════════════════════════ */
+function tenureMo(doj){if(!doj)return 0;return Math.floor((new Date()-new Date(doj))/(1000*60*60*24*30.44))}
+function tenureStr(doj){
+  const m=tenureMo(doj); if(!m)return '—';
+  if(m<1)return 'New'; if(m<12)return m+'m';
+  const y=Math.floor(m/12),r=m%12; return y+'y'+(r?' '+r+'m':'');
+}
+function stBadge(s){
+  const m={green:'bg-green',amber:'bg-amber',red:'bg-red'};
+  const l={green:'Assigned',amber:'Waiting',red:'No Project'};
+  return `<span class="badge ${m[s]||'bg-blue'}">${l[s]||s||'—'}</span>`;
+}
+function avColor(name){
+  const c=['#4a8fc1','#e63950','#f5a623','#27ae60','#8e44ad','#16a085','#e67e22'];
+  let h=0; for(const ch of(name||''))h=(h+ch.charCodeAt(0))%c.length; return c[h];
+}
+function getEmpList(){
+  let list=curRole==='manager'
+    ? employees.filter(e=>e.manager&&e.manager.toLowerCase().includes(curUser.split(' ')[0].toLowerCase()))
+    : [...employees];
+  const q=(document.getElementById('empSrch')||{}).value?.toLowerCase()||'';
+  const bu=(document.getElementById('fBU')||{}).value||'';
+  const st=(document.getElementById('fSt')||{}).value||'';
+  const ten=(document.getElementById('fTen')||{}).value||'';
+  if(q) list=list.filter(e=>[e.name,e.emp_id,e.bu,e.function_name,e.skills,e.skills2,e.manager,e.domain].join(' ').toLowerCase().includes(q));
+  if(bu) list=list.filter(e=>e.bu===bu);
+  if(st) list=list.filter(e=>e.status===st);
+  if(ten==='new') list=list.filter(e=>tenureMo(e.doj)<3);
+  else if(ten==='mid') list=list.filter(e=>{const m=tenureMo(e.doj);return m>=3&&m<12});
+  else if(ten==='sr')  list=list.filter(e=>tenureMo(e.doj)>=12);
+  return list;
+}
+
+/* ══════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════ */
+function renderDash(){
+  const tot=employees.length,gr=employees.filter(e=>e.status==='green').length,
+        am=employees.filter(e=>e.status==='amber').length,rd=employees.filter(e=>e.status==='red').length,
+        nw=employees.filter(e=>tenureMo(e.doj)<3).length;
+
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat c-grey" onclick="goEmpFilter('','')"><div class="stat-val">${tot}</div><div class="stat-lbl">Total Employees</div><div class="stat-arrow">view →</div></div>
+    <div class="stat c-green" onclick="goEmpFilter('','green')"><div class="stat-val" style="color:#4ade80">${gr}</div><div class="stat-lbl">🟢 Assigned</div><div class="stat-arrow">view →</div></div>
+    <div class="stat c-amber" onclick="goEmpFilter('','amber')"><div class="stat-val" style="color:var(--amber)">${am}</div><div class="stat-lbl">🟡 Waiting</div><div class="stat-arrow">view →</div></div>
+    <div class="stat c-red" onclick="goEmpFilter('','red')"><div class="stat-val" style="color:var(--red)">${rd}</div><div class="stat-lbl">🔴 No Project</div><div class="stat-arrow">view →</div></div>
+    <div class="stat c-blue" onclick="goEmpFilter('','')"><div class="stat-val" style="color:var(--blue)">${nw}</div><div class="stat-lbl">New Joiners</div><div class="stat-arrow">view →</div></div>
+  `;
+
+  const buC={};employees.forEach(e=>{buC[e.bu]=(buC[e.bu]||0)+1});
+  const maxB=Math.max(...Object.values(buC),1);
+  document.getElementById('buChart').innerHTML=Object.entries(buC).sort((a,b)=>b[1]-a[1]).map(([bu,ct])=>`
+    <div class="bar-row">
+      <div class="bar-labels"><span style="font-weight:600;color:${BU_COLORS[bu]||'#8fa3b1'}">${bu}</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)">${ct}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(ct/maxB*100)}%;background:${BU_COLORS[bu]||'#8fa3b1'}"></div></div>
+    </div>`).join('')||'<div style="color:var(--text3);font-size:12px">No data yet</div>';
+
+  document.getElementById('statusChart').innerHTML=`
+    <div class="leg-row"><span class="leg-dot" style="background:#4ade80"></span><span>🟢 Assigned to project</span><span class="leg-val" style="color:#4ade80">${gr}</span></div>
+    <div class="leg-row"><span class="leg-dot" style="background:var(--amber)"></span><span>🟡 Waiting / On bench</span><span class="leg-val" style="color:var(--amber)">${am}</span></div>
+    <div class="leg-row"><span class="leg-dot" style="background:var(--red)"></span><span>🔴 No project assigned</span><span class="leg-val" style="color:var(--red)">${rd}</span></div>
+    <div class="leg-row" style="margin-top:6px"><span style="color:var(--text3);font-size:12px">Total headcount</span><span class="leg-val">${tot}</span></div>`;
+
+  const rdEmps=employees.filter(e=>e.status==='red');
+  const pendC=connects.filter(c=>c.status==='pending'||c.status==='overdue');
+  const newNoC=employees.filter(e=>tenureMo(e.doj)<30&&!connects.find(c=>c.emp_id===e.id&&c.type==='post-joining'&&c.status==='done'));
+  document.getElementById('alertsList').innerHTML=[
+    ...rdEmps.slice(0,3).map(e=>`<div class="alert-item" style="background:var(--red-bg)" onclick="viewEmp('${e.id}')"><div class="alert-icon" style="background:var(--red-mid)">🔴</div><div><strong style="font-size:12px;color:var(--text)">${e.name}</strong><div style="font-size:10.5px;color:var(--red)">${e.bu} · ${e.function_name}</div></div></div>`),
+    ...pendC.slice(0,2).map(c=>`<div class="alert-item" style="background:var(--amber-bg)"><div class="alert-icon" style="background:var(--amber-mid)">⏳</div><div><strong style="font-size:12px;color:var(--text)">${c.emp_name}</strong><div style="font-size:10.5px;color:var(--amber)">${c.type} — ${c.status}</div></div></div>`),
+    ...newNoC.slice(0,2).map(e=>`<div class="alert-item" style="background:var(--blue-bg)" onclick="openConForEmp('${e.id}')"><div class="alert-icon" style="background:var(--blue-mid)">📋</div><div><strong style="font-size:12px;color:var(--text)">${e.name}</strong><div style="font-size:10.5px;color:var(--blue)">Post-joining connect pending</div></div></div>`),
+  ].join('')||'<div style="color:var(--text3);font-size:12px;padding:.5rem">No alerts — all good!</div>';
+
+  const due=connects.filter(c=>c.next_date&&new Date(c.next_date)<=new Date(Date.now()+7*86400000)&&c.status!=='done').slice(0,5);
+  document.getElementById('conDue').innerHTML=due.length
+    ? due.map(c=>`<div class="leg-row"><span style="font-weight:600;color:var(--text)">${c.emp_name}</span><span style="font-size:11px;color:var(--text3)">${c.type}</span><span class="leg-val" style="color:var(--amber)">${c.next_date}</span></div>`).join('')
+    : '<div style="color:var(--text3);font-size:12px">No connects due this week</div>';
+
+  if(curRole==='master'||curRole==='hr')
+    document.getElementById('dashActs').innerHTML=`<button class="btn btn-red" onclick="openEmpModal()">+ Add Employee</button>`;
+}
+
+function goEmpFilter(bu,st){
+  showPage('pgEmp');
+  setTimeout(()=>{
+    if(bu)document.getElementById('fBU').value=bu;
+    if(st)document.getElementById('fSt').value=st;
+    renderEmpTbl();
+  },50);
+}
+
+/* ══════════════════════════════════════
+   EMPLOYEES PAGE
+══════════════════════════════════════ */
+function renderEmpPage(){
+  const buSel=document.getElementById('fBU');
+  buSel.innerHTML='<option value="">All BUs</option>'+Object.keys(BU_FNS).map(b=>`<option>${b}</option>`).join('');
+  if(curRole==='manager')document.getElementById('empPageSub').textContent='Your team members';
+  document.getElementById('empActs').innerHTML=(curRole==='master'||curRole==='hr')
+    ?`<button class="btn btn-red" onclick="openEmpModal()">+ Add Employee</button>`:'';
+  renderEmpTbl();
+}
+
+function renderEmpTbl(){
+  const list=getEmpList();
+  const canEdit=curRole==='master'||curRole==='hr';
+  const canSkill=curRole==='manager';
+  document.getElementById('empTbl').innerHTML=`
+    <table><thead><tr><th>Employee</th><th>BU / Function</th><th>Skills</th><th>Tenure</th><th>Status</th><th>Manager</th><th>Actions</th></tr></thead>
+    <tbody>${list.length?list.map(e=>`<tr>
+      <td><div class="emp-name" onclick="viewEmp('${e.id}')">${e.name}</div><div class="emp-id">${e.emp_id||e.id}</div></td>
+      <td><div style="font-weight:600;font-size:12.5px;color:${BU_COLORS[e.bu]||'var(--text2)'}">${e.bu||'—'}</div><div style="font-size:11px;color:var(--text3)">${e.function_name||'—'}</div></td>
+      <td><div style="display:flex;flex-wrap:wrap;gap:2px;max-width:190px">${(e.skills||'').split(',').slice(0,3).filter(Boolean).map(s=>`<span class="skill-tag">${s.trim()}</span>`).join('')}${(e.skills||'').split(',').length>3?`<span style="font-size:10px;color:var(--text3)">+${(e.skills||'').split(',').length-3}</span>`:''}</div></td>
+      <td><span class="tenure-val">${tenureStr(e.doj)}</span></td>
+      <td>${stBadge(e.status)}</td>
+      <td style="font-size:12px;color:var(--text3)">${e.manager||'—'}</td>
+      <td><div class="act-btns">
+        <button class="ab ab-view" onclick="viewEmp('${e.id}')">View</button>
+        ${canEdit?`<button class="ab ab-edit" onclick="editEmp('${e.id}')">Edit</button><button class="ab ab-del" onclick="delEmp('${e.id}')">Del</button>`:''}
+        ${canSkill?`<button class="ab ab-edit" onclick="editEmp('${e.id}')">Skills</button>`:''}
+      </div></td>
+    </tr>`).join(''):`<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text3)">No employees found</td></tr>`}
+    </tbody></table>`;
+}
+
+/* ══════════════════════════════════════
+   EMPLOYEE MODAL
+══════════════════════════════════════ */
+function updateFnDrop(){
+  const bu=document.getElementById('fBUm').value;
+  document.getElementById('fFn').innerHTML=(BU_FNS[bu]||[]).map(f=>`<option>${f}</option>`).join('');
+}
+function openEmpModal(emp=null){
+  editEmpId=emp?emp.id:null;
+  document.getElementById('moEmpTitle').textContent=emp?'Edit Employee':'Add Employee';
+  if(emp){
+    document.getElementById('fId').value=emp.emp_id||emp.id||'';
+    document.getElementById('fName').value=emp.name||'';
+    document.getElementById('fEmail').value=emp.email||'';
+    document.getElementById('fPhone').value=emp.phone||'';
+    document.getElementById('fDoj').value=emp.doj||'';
+    document.getElementById('fLoc').value=emp.location||'';
+    document.getElementById('fBUm').value=emp.bu||'';
+    updateFnDrop();
+    document.getElementById('fFn').value=emp.function_name||'';
+    document.getElementById('fDom').value=emp.domain||'';
+    document.getElementById('fMgr').value=emp.manager||'';
+    document.getElementById('fDes').value=emp.designation||'';
+    document.getElementById('fGrd').value=emp.grade||'';
+    document.getElementById('fSk1').value=emp.skills||'';
+    document.getElementById('fSk2').value=emp.skills2||'';
+    document.getElementById('fSkLv').value=emp.skill_level||'Senior';
+    document.getElementById('fExp').value=emp.exp_years||'';
+    document.getElementById('fPrj').value=emp.project||'';
+    document.getElementById('fSt2').value=emp.status||'amber';
+    document.getElementById('fPs').value=emp.proj_start||'';
+    document.getElementById('fPe').value=emp.proj_end||'';
+    document.getElementById('fNt').value=emp.notes||'';
+  } else {
+    ['fId','fName','fEmail','fPhone','fDoj','fLoc','fDom','fMgr','fDes','fGrd','fSk1','fSk2','fExp','fPrj','fPs','fPe','fNt'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('fSt2').value='amber';
+  }
+  openMo('moEmp');
+}
+function editEmp(id){const e=employees.find(x=>x.id===id);if(e)openEmpModal(e)}
+
+async function saveEmp(){
+  const name=document.getElementById('fName').value.trim();
+  const id=document.getElementById('fId').value.trim();
+  if(!name||!id){showToast('Name and Employee ID are required','err');return}
+  const emp={
+    id:editEmpId||id, emp_id:id, name,
+    email:document.getElementById('fEmail').value.trim(),
+    phone:document.getElementById('fPhone').value.trim(),
+    doj:document.getElementById('fDoj').value,
+    location:document.getElementById('fLoc').value.trim(),
+    bu:document.getElementById('fBUm').value,
+    function_name:document.getElementById('fFn').value,
+    domain:document.getElementById('fDom').value.trim(),
+    manager:document.getElementById('fMgr').value.trim(),
+    designation:document.getElementById('fDes').value.trim(),
+    grade:document.getElementById('fGrd').value.trim(),
+    skills:document.getElementById('fSk1').value.trim(),
+    skills2:document.getElementById('fSk2').value.trim(),
+    skill_level:document.getElementById('fSkLv').value,
+    exp_years:parseInt(document.getElementById('fExp').value)||0,
+    project:document.getElementById('fPrj').value.trim(),
+    status:document.getElementById('fSt2').value,
+    proj_start:document.getElementById('fPs').value,
+    proj_end:document.getElementById('fPe').value,
+    notes:document.getElementById('fNt').value.trim(),
+    created_at:new Date().toISOString(),
+  };
+  await saveEmpDB(emp);
+  closeMo('moEmp');
+  showToast((editEmpId?'Updated':'Added')+': '+name,'ok');
+  renderEmpTbl(); renderDash();
+}
+
+async function delEmp(id){
+  const e=employees.find(x=>x.id===id);
+  if(!e||!confirm(`Delete ${e.name}? This cannot be undone.`))return;
+  await delEmpDB(id);
+  showToast('Deleted','ok'); renderEmpTbl(); renderDash();
+}
+
+/* ══════════════════════════════════════
+   EMPLOYEE VIEW
+══════════════════════════════════════ */
+function viewEmp(id){
+  const e=employees.find(x=>x.id===id); if(!e)return;
+  const ec=connects.filter(c=>c.emp_id===id);
+  const col=avColor(e.name);
+  const ini=(e.name||'').split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('moViewTitle').textContent='Employee Profile';
+  document.getElementById('moViewBody').innerHTML=`
+    <div class="pf-header">
+      <div class="pf-av" style="background:${col}22;color:${col}">${ini}</div>
+      <div>
+        <div class="pf-name">${e.name}</div>
+        <div class="pf-meta">${e.emp_id||e.id} · ${e.designation||''} · ${e.bu||''} · ${e.function_name||''}</div>
+        <div style="margin-top:7px">${stBadge(e.status)}</div>
+      </div>
+    </div>
+    <div class="pf-grid">
+      <div class="pfc"><div class="pfc-title">Personal & Work</div>
+        <div class="pf-field"><span class="pf-lbl">Email</span><span class="pf-val">${e.email||'—'}</span></div>
+        <div class="pf-field"><span class="pf-lbl">Phone</span><span class="pf-val">${e.phone||'—'}</span></div>
+        <div class="pf-field"><span class="pf-lbl">Location</span><span class="pf-val">${e.location||'—'}</span></div>
+        <div class="pf-field"><span class="pf-lbl">Date of Joining</span><span class="pf-val">${e.doj||'—'}</span></div>
+        <div class="pf-field"><span class="pf-lbl">Tenure</span><span class="pf-val" style="color:var(--amber)">${tenureStr(e.doj)}</span></div>
+        <div class="pf-field"><span class="pf-lbl">Grade</span><span class="pf-val">${e.grade||'—'}</span></div>
+        <div class="pf-field"><span class="pf-lbl">Manager</span><span class="pf-val">${e.manager||'—'}</span></div>
+        <div class="pf-field"><span class="pf-lbl">Domain</span><span class="pf-val">${e.domain||'—'}</span></div>
+      </div>
+      <div class="pfc"><div class="pfc-title">Project Assignment</div>
+        <div class="pf-field"><span class="pf-lbl">Status</span><span class="pf-val">${stBadge(e.status)}</span></div>
+        <div class="pf-field"><span class="pf-lbl">Project</span><span class="pf-val">${e.project||'—'}</span></div>
+        <div class="pf-field"><span class="pf-lbl">Start Date</span><span class="pf-val">${e.proj_start||'—'}</span></div>
+        <div class="pf-field"><span class="pf-lbl">Release Date</span><span class="pf-val">${e.proj_end||'—'}</span></div>
+        <div class="pf-field"><span class="pf-lbl">Skill Level</span><span class="pf-val">${e.skill_level||'—'}</span></div>
+        <div class="pf-field"><span class="pf-lbl">Experience</span><span class="pf-val">${e.exp_years?e.exp_years+' years':'—'}</span></div>
+      </div>
+    </div>
+    <div class="pfc" style="margin-bottom:1rem">
+      <div class="pfc-title">Skillset</div>
+      <div style="margin-bottom:8px"><div style="font-size:10px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.1em">Primary</div>
+      <div class="skill-pills">${(e.skills||'').split(',').filter(Boolean).map(s=>`<span class="skill-tag">${s.trim()}</span>`).join('')||'<span style="color:var(--text3);font-size:12px">None added</span>'}</div></div>
+      ${e.skills2?`<div><div style="font-size:10px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.1em">Secondary</div>
+      <div class="skill-pills">${e.skills2.split(',').filter(Boolean).map(s=>`<span class="skill-tag" style="background:var(--amber-bg);color:var(--amber);border-color:var(--amber-mid)">${s.trim()}</span>`).join('')}</div></div>`:''}
+    </div>
+    ${ec.length?`<div class="pfc"><div class="pfc-title">Connect History</div>
+      ${ec.map(c=>`<div class="con-item ${c.status==='done'?'con-done':c.status==='overdue'?'con-overdue':'con-pending'}">
+        <div class="con-dot" style="background:${c.status==='done'?'var(--green-bg)':c.status==='overdue'?'var(--red-bg)':'var(--amber-bg)'};color:${c.status==='done'?'#4ade80':c.status==='overdue'?'var(--red)':'var(--amber)'}">
+          ${c.status==='done'?'✓':c.status==='overdue'?'!':'⏳'}
+        </div>
+        <div>
+          <div class="con-type">${c.type} Connect</div>
+          <div class="con-date">${c.connect_date||'Not scheduled'} ${c.hr_name?'· '+c.hr_name:''}</div>
+          ${c.notes?`<div class="con-notes">${c.notes}</div>`:''}
+        </div>
+      </div>`).join('')}
+    </div>`:''}
+    ${e.notes?`<div style="margin-top:1rem;padding:10px 12px;background:var(--amber-bg);border-radius:6px;font-size:12px;color:var(--amber);border-left:3px solid var(--amber)">${e.notes}</div>`:''}
+  `;
+  openMo('moView');
+}
+
+/* ══════════════════════════════════════
+   CONNECTS PAGE
+══════════════════════════════════════ */
+function renderConPage(){
+  const tot=connects.length,dn=connects.filter(c=>c.status==='done').length,
+        pd=connects.filter(c=>c.status==='pending').length,od=connects.filter(c=>c.status==='overdue').length;
+  document.getElementById('conStats').innerHTML=`
+    <div class="stat c-grey"><div class="stat-val">${tot}</div><div class="stat-lbl">Total Connects</div></div>
+    <div class="stat c-green"><div class="stat-val" style="color:#4ade80">${dn}</div><div class="stat-lbl">Completed</div></div>
+    <div class="stat c-amber"><div class="stat-val" style="color:var(--amber)">${pd}</div><div class="stat-lbl">Pending</div></div>
+    <div class="stat c-red"><div class="stat-val" style="color:var(--red)">${od}</div><div class="stat-lbl">Overdue</div></div>
+    <div class="stat c-blue"><div class="stat-val" style="color:var(--blue)">${employees.filter(e=>tenureMo(e.doj)<3).length}</div><div class="stat-lbl">New Joiners</div></div>`;
+  popConEmpDrop(); renderConTbl();
+}
+
+function renderConTbl(){
+  const q=(document.getElementById('conSrch')||{}).value?.toLowerCase()||'';
+  const tp=(document.getElementById('fConType')||{}).value||'';
+  const st=(document.getElementById('fConSt')||{}).value||'';
+  let list=[...connects];
+  if(q)list=list.filter(c=>c.emp_name?.toLowerCase().includes(q));
+  if(tp)list=list.filter(c=>c.type===tp);
+  if(st)list=list.filter(c=>c.status===st);
+  const sc={done:'bg-green',pending:'bg-amber',overdue:'bg-red'};
+  document.getElementById('conTbl').innerHTML=`
+    <table><thead><tr><th>Employee</th><th>Type</th><th>Date</th><th>Status</th><th>HR BP</th><th>Next Date</th><th>Notes</th><th>Actions</th></tr></thead>
+    <tbody>${list.length?list.map(c=>`<tr>
+      <td><div class="emp-name" onclick="viewEmp('${c.emp_id}')">${c.emp_name||'—'}</div></td>
+      <td style="font-size:12px;font-weight:600;color:var(--text2)">${c.type}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text3)">${c.connect_date||'—'}</td>
+      <td><span class="badge ${sc[c.status]||'bg-blue'}">${c.status}</span></td>
+      <td style="font-size:12px;color:var(--text3)">${c.hr_name||'—'}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:${c.next_date&&new Date(c.next_date)<new Date()?'var(--red)':'var(--text3)'}">${c.next_date||'—'}</td>
+      <td style="font-size:11.5px;color:var(--text3);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.notes||'—'}</td>
+      <td><div class="act-btns">
+        <button class="ab ab-edit" onclick="editCon('${c.id}')">Edit</button>
+        <button class="ab ab-del" onclick="delCon('${c.id}')">Del</button>
+      </div></td>
+    </tr>`).join(''):`<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text3)">No connects found</td></tr>`}
+    </tbody></table>`;
+}
+
+function popConEmpDrop(){
+  document.getElementById('cEmp').innerHTML='<option value="">Select employee</option>'+
+    employees.map(e=>`<option value="${e.id}">${e.name} (${e.emp_id||e.id})</option>`).join('');
+}
+
+function openConModal(con=null){
+  popConEmpDrop();
+  if(con){
+    document.getElementById('cEmp').value=con.emp_id||'';
+    document.getElementById('cType').value=con.type||'post-joining';
+    document.getElementById('cDate').value=con.connect_date||'';
+    document.getElementById('cSt').value=con.status||'done';
+    document.getElementById('cHR').value=con.hr_name||'';
+    document.getElementById('cNotes').value=con.notes||'';
+    document.getElementById('cNext').value=con.next_date||'';
+    document.getElementById('cAct').value=con.action||'';
+    document.getElementById('cEmp').dataset.eid=con.id;
+  } else {
+    ['cDate','cNotes','cNext','cAct','cHR'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('cEmp').dataset.eid='';
+    document.getElementById('cDate').value=new Date().toISOString().split('T')[0];
+  }
+  openMo('moCon');
+}
+function openConForEmp(eid){openConModal();setTimeout(()=>{document.getElementById('cEmp').value=eid},50)}
+function editCon(id){const c=connects.find(x=>x.id===id);if(c)openConModal(c)}
+
+async function saveCon(){
+  const eid=document.getElementById('cEmp').value;
+  const emp=employees.find(e=>e.id===eid);
+  if(!eid||!emp){showToast('Please select an employee','err');return}
+  const editId=document.getElementById('cEmp').dataset.eid;
+  const con={
+    id:editId||'CON-'+Date.now(), emp_id:eid, emp_name:emp.name,
+    type:document.getElementById('cType').value,
+    connect_date:document.getElementById('cDate').value,
+    status:document.getElementById('cSt').value,
+    hr_name:document.getElementById('cHR').value.trim(),
+    notes:document.getElementById('cNotes').value.trim(),
+    next_date:document.getElementById('cNext').value,
+    action:document.getElementById('cAct').value.trim(),
+    created_at:new Date().toISOString(),
+  };
+  await saveConDB(con);
+  closeMo('moCon'); showToast('Connect saved','ok'); renderConPage();
+}
+
+async function delCon(id){
+  if(!confirm('Delete this connect record?'))return;
+  await delConDB(id); showToast('Deleted','ok'); renderConTbl();
+}
+
+/* ══════════════════════════════════════
+   SKILLS PAGE
+══════════════════════════════════════ */
+function renderSkills(){
+  const q=(document.getElementById('skillSrch')||{}).value?.toLowerCase()||'';
+  let html='';
+  for(const [bu,fns] of Object.entries(SKILL_DATA)){
+    const col=BU_COLORS[bu]||'#8fa3b1';
+    const filtered=Object.entries(fns).filter(([fn,d])=>!q||[fn,d.lang,d.db,d.cloud,d.other,d.leader].join(' ').toLowerCase().includes(q));
+    if(!filtered.length)continue;
+    html+=`<div class="skills-bu-header">
+      <span class="skills-bu-dot" style="background:${col}"></span>
+      <span class="skills-bu-name" style="color:${col}">${bu}</span>
+      <span style="font-size:11px;color:var(--text3);margin-left:4px">${filtered.length} functions</span>
+    </div>
+    <div class="skills-fn-grid">
+      ${filtered.map(([fn,d])=>`<div class="skills-fn-card" style="border-top-color:${col}">
+        <div class="sfn-name">${fn}</div>
+        ${d.leader&&d.leader!=='—'?`<div class="sfn-leader">👤 ${d.leader}</div>`:''}
+        ${d.lang?`<div class="sfn-sec">Languages & Frameworks</div><div class="sfn-val">${d.lang}</div>`:''}
+        ${d.db?`<div class="sfn-sec">Databases</div><div class="sfn-val">${d.db}</div>`:''}
+        ${d.cloud?`<div class="sfn-sec">Cloud</div><div class="sfn-val" style="color:var(--blue)">${d.cloud}</div>`:''}
+        ${d.other?`<div class="sfn-sec">Other Skills</div><div class="sfn-val">${d.other}</div>`:''}
+      </div>`).join('')}
+    </div>`;
+  }
+  document.getElementById('skillsContent').innerHTML=html||`<div style="color:var(--text3);text-align:center;padding:2rem">No skills match your search</div>`;
+}
+
+/* ══════════════════════════════════════
+   BULK UPLOAD
+══════════════════════════════════════ */
+let bulkRaw=[];
+function handleDrop(e){e.preventDefault();document.getElementById('upZone').classList.remove('drag');if(e.dataTransfer.files[0])procBulk(e.dataTransfer.files[0])}
+function handleBulkFile(e){if(e.target.files[0])procBulk(e.target.files[0])}
+function procBulk(file){
+  const ext=file.name.split('.').pop().toLowerCase();
+  const rd=new FileReader();
+  rd.onload=ev=>{
+    try{
+      let rows;
+      if(ext==='csv')rows=parseCSV(ev.target.result);
+      else{const wb=XLSX.read(ev.target.result,{type:'binary'});rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''})}
+      bulkRaw=rows; showBulkPrev(rows,file.name);
+    }catch(err){showToast('File error: '+err.message,'err')}
+  };
+  ext==='csv'?rd.readAsText(file):rd.readAsBinaryString(file);
+}
+function cv(row,opts){for(const o of opts){const k=Object.keys(row).find(k=>k.toLowerCase().replace(/[\s_\-]/g,'').includes(o.toLowerCase().replace(/[\s_\-]/g,'')));if(k&&row[k]!==undefined&&String(row[k]).trim())return String(row[k]).trim()}return''}
+function normSt(v){const s=(v||'').toLowerCase();if(s.includes('green')||s.includes('assign'))return'green';if(s.includes('red')||s.includes('no project'))return'red';return'amber'}
+function parseCSV(txt){const l=txt.trim().split('\n'),h=l[0].split(',').map(x=>x.trim().replace(/^"|"$/g,''));return l.slice(1).map(r=>{const v=r.split(',').map(x=>x.trim().replace(/^"|"$/g,''));const o={};h.forEach((k,i)=>o[k]=v[i]||'');return o})}
+
+function showBulkPrev(rows,fname){
+  document.getElementById('upPreview').innerHTML=`<div style="background:var(--card);border-radius:7px;padding:.85rem 1rem;margin-bottom:.75rem"><div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:4px">📄 ${fname} — ${rows.length} rows</div><div style="font-size:10.5px;color:var(--text3)">Columns: ${Object.keys(rows[0]||{}).join(', ')}</div></div>`;
+  document.getElementById('impBtn').style.display='flex';
+  pendingImport=rows.map((r,i)=>({
+    id:cv(r,['employeeid','id','empid'])||'IMP-'+String(i+1).padStart(4,'0'),
+    emp_id:cv(r,['employeeid','id','empid'])||'IMP-'+String(i+1).padStart(4,'0'),
+    name:cv(r,['name','fullname','employeename'])||'Unknown',
+    email:cv(r,['email','mail']),phone:cv(r,['phone','mobile']),
+    doj:cv(r,['doj','dateofjoining','joiningdate']),
+    location:cv(r,['location','city']),
+    bu:cv(r,['bu','businessunit','unit','department']),
+    function_name:cv(r,['function','role','functionname']),
+    domain:cv(r,['domain']),manager:cv(r,['manager','reportingmanager']),
+    designation:cv(r,['designation','title','jobtitle']),grade:cv(r,['grade','level','band']),
+    skills:cv(r,['skills','primaryskills','skill','technologies']),
+    skills2:cv(r,['secondaryskills','skills2']),
+    skill_level:cv(r,['skilllevel','proficiency'])||'Intermediate',
+    exp_years:parseInt(cv(r,['experience','exp','expyears']))||0,
+    project:cv(r,['project','currentproject']),
+    status:normSt(cv(r,['status','projectstatus','availability'])),
+    proj_start:cv(r,['projectstart','startdate']),proj_end:cv(r,['releasedate','enddate']),
+    notes:cv(r,['notes','comments']),created_at:new Date().toISOString(),
+  }));
+}
+
+async function doBulkImport(){
+  if(!pendingImport.length){showToast('No data to import','err');return}
+  let ok=0,fail=0;
+  for(const emp of pendingImport){try{await saveEmpDB(emp);ok++}catch(e){fail++}}
+  document.getElementById('impLog').innerHTML=`<div class="dc" style="font-size:13px"><span style="color:#4ade80;font-weight:700">✓ ${ok} employees imported</span>${fail?` <span style="color:var(--red);margin-left:1rem">✗ ${fail} failed</span>`:''}</div>`;
+  showToast(`${ok} employees imported!`,'ok');
+  pendingImport=[]; document.getElementById('impBtn').style.display='none';
+}
+
+/* ══════════════════════════════════════
+   SETTINGS
+══════════════════════════════════════ */
+function renderSettings(){
+  document.getElementById('credList').innerHTML=Object.entries(CREDS).map(([role,c])=>`
+    <div class="cred-row">
+      <div class="cred-role">${c.label}</div>
+      <div class="cred-info"><span>user: <strong>${c.u}</strong></span><span>pass: <strong>${c.p}</strong></span></div>
+    </div>`).join('');
+  const url=SB_URL;
+  document.getElementById('dbStatus').innerHTML=`
+    <div style="padding:10px 13px;border-radius:8px;background:${USE_LOCAL?'var(--amber-bg)':'var(--green-bg)'}">
+      <div style="font-size:13px;font-weight:700;color:${USE_LOCAL?'var(--amber)':'#4ade80'}">${USE_LOCAL?'⚠ Local Mode':'✓ Supabase Connected'}</div>
+      ${url?`<div style="font-size:10.5px;color:var(--text3);margin-top:3px;font-family:'JetBrains Mono',monospace">${url}</div>`:''}
+      <div style="font-size:11.5px;color:var(--text3);margin-top:5px">${USE_LOCAL?'Data in browser localStorage — not synced.':'Cloud synced — all users share data.'}</div>
+    </div>
+    <div style="margin-top:1rem;font-size:11.5px;color:var(--text3);line-height:1.7">
+      <strong style="color:var(--text2)">SQL Schema</strong> — run once in Supabase SQL Editor:
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--navy);border:1px solid var(--border);padding:.75rem;border-radius:6px;margin-top:.5rem;overflow-x:auto;white-space:pre;color:#7dd3fc">${SCHEMA_SQL}</div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════
+   UTILS
+══════════════════════════════════════ */
+function openMo(id){document.getElementById(id).classList.add('open')}
+function closeMo(id){document.getElementById(id).classList.remove('open')}
+let _tt;
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast show toast-${type||'info'}`;
+  clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+/* ── AUTO INIT ── */
+autoConnect();
+</script>
+</body>
+</html>
